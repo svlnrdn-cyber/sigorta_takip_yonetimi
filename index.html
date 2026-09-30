@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sigorta Takip & CRM Sistemi</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        
+        #loginEkrani { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; display: flex; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; }
+        .login-kutu { background: white; padding: 40px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 300px; }
+        .login-kutu input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .login-kutu button { width: 100%; padding: 10px; background: #0056b3; color: white; border: none; font-size: 16px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;}
+        
+        #anaUygulama { display: none; } 
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        
+        .form-container, .admin-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .admin-container { background: #fff3cd; border-left: 5px solid #ffc107; display: none; }
+        
+        h2 { color: #333; font-size: 18px; border-bottom: 2px solid #0056b3; padding-bottom: 5px; margin-top:0; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #555; }
+        input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        optgroup { font-weight: bold; color: #0056b3; }
+        
+        .dinamik-alan { display: none; background-color: #e9ecef; padding: 15px; border-radius: 6px; border: 1px dashed #adb5bd; }
+        
+        .save-btn { grid-column: 1 / -1; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px;}
+        .save-btn:hover { background-color: #218838; }
+        .admin-btn { background-color: #ffc107; color: black; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%;}
+        
+        #bildirimPaneli { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; border-left: 5px solid #dc3545; display: none; }
+        
+        .table-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; }
+        .btn-excel { background-color: #198754; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #333; font-weight: bold; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; color: white; }
+        .badge-safe { background-color: #28a745; }
+        .badge-warn { background-color: #ffc107; color: black; }
+        .badge-danger { background-color: #dc3545; }
+        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .user-tag { background: #17a2b8; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .detay-metni { font-size: 11px; color: #555; background: #f8f9fa; padding: 4px; border-radius: 4px; border: 1px solid #eee; display: inline-block;}
+    </style>
+</head>
+<body>
+
+    <div id="loginEkrani">
+        <div class="login-kutu">
+            <h2 style="border:none; margin-top:0;">Sistem Girişi</h2>
+            <input type="email" id="emailGiris" placeholder="E-posta Adresi">
+            <input type="password" id="sifreGiris" placeholder="Şifre">
+            <button id="btnGiris">Giriş Yap</button>
+            <p id="hataMesaji" style="color:red; font-size:12px; display:none;"></p>
+        </div>
+    </div>
+
+    <div id="anaUygulama">
+        <div class="header">
+            <div>
+                <h3 style="margin:0;">Sigorta Takip ve CRM Sistemi</h3>
+                <small id="kullaniciBilgi"></small>
+            </div>
+            <button class="logout-btn" id="btnCikis">Oturumu Kapat</button>
+        </div>
+
+        <div class="admin-container" id="adminPaneli">
+            <h2>Acente Yetkilendirme ve Abonelik Yönetimi</h2>
+            <p style="font-size: 12px; margin-top: -5px; color: #666;">Sistem erişimi sağlanan acentelerin kullanım sürelerini bu panelden yönetebilirsiniz.</p>
+            <div class="form-grid">
+                <div class="form-group"><label>Acente E-posta Adresi</label><input type="email" id="aboneEmail" placeholder="Müşteri E-posta Adresi"></div>
+                <div class="form-group">
+                    <label>Abonelik Süresi</label>
+                    <select id="aboneSure">
+                        <option value="1m">1 Aylık Erişim</option>
+                        <option value="1y">1 Yıllık Erişim</option>
+                    </select>
+                </div>
+                <button class="admin-btn" id="btnAboneEkle">Yetkilendirmeyi Onayla</button>
+            </div>
+        </div>
+
+        <div id="bildirimPaneli"></div>
+
+        <div class="form-container">
+            <h2>Yeni Sigorta Poliçesi Kaydı</h2>
+            <div class="form-grid">
+                <div class="form-group full-width" style="background:#e3f2fd; padding:10px; border-radius:6px; border:1px solid #90caf9;">
+                    <label style="color:#0056b3;">Sigorta Branşı</label>
+                    <select id="brans" onchange="dinamikAlanlariGuncelle()" style="border-color:#64b5f6; font-weight:bold; height: 35px;">
+                        <option value="">Lütfen Bir Branş Seçiniz...</option>
+                        <optgroup label="Oto Grubu">
+                            <option value="Trafik">Trafik Sigortası</option>
+                            <option value="Kasko">Kasko</option>
+                            <option value="Yeşil Kart">Yeşil Kart</option>
+                            <option value="İMM">İhtiyari Mali Mesuliyet (İMM)</option>
+                        </optgroup>
+                        <optgroup label="Sağlık ve Hayat">
+                            <option value="TSS">TSS (Tamamlayıcı Sağlık)</option>
+                            <option value="ÖSS">ÖSS (Özel Sağlık)</option>
+                            <option value="Seyahat Sağlık">Seyahat Sağlık</option>
+                            <option value="Yabancı Sağlık">Yabancı Sağlık</option>
+                        </optgroup>
+                        <optgroup label="Konut ve İşyeri">
+                            <option value="DASK">DASK</option>
+                            <option value="Konut">Konut Sigortası</option>
+                            <option value="İşyeri">İşyeri Sigortası</option>
+                        </optgroup>
+                        <optgroup label="Diğer Kurumsal">
+                            <option value="Diğer">Diğer (Manuel Giriş)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group"><label>Müşteri Adı Soyadı / Unvan</label><input type="text" id="musteri"></div>
+                <div class="form-group"><label>TC / VKN</label><input type="text" id="tc" maxlength="11"></div>
+                <div class="form-group"><label>Telefon Numarası</label><input type="text" id="telefon"></div>
+                <div class="form-group"><label>Poliçe Başlangıç Tarihi</label><input type="date" id="baslangic" onchange="bitisHesapla()"></div>
+                <div class="form-group">
+                    <label>Poliçe Süresi</label>
+                    <select id="sure" onchange="bitisHesapla()">
+                        <option value="">Seçiniz...</option>
+                        <option value="15d">15 Gün</option>
+                        <option value="3m">3 Ay</option>
+                        <option value="6m">6 Ay</option>
+                        <option value="1y">1 Yıl</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Poliçe Bitiş Tarihi</label><input type="date" id="bitis" readonly style="background-color: #e9ecef;"></div>
+
+                <div class="form-group dinamik-alan full-width" id="otoAlanlari">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div><label>Plaka Numarası</label><input type="text" id="plaka" style="width:100%;"></div>
+                        <div><label>Ruhsat Seri Numarası</label><input type="text" id="ruhsat" style="width:100%;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group dinamik-alan full-width" id="saglikAlanlari">
+                    <div><label>Doğum Tarihi</label><input type="date" id="dogum" style="width:100%; box-sizing:border-box;"></div>
+                </div>
+
+                <div class="form-group dinamik-alan full-width" id="evAlanlari">
+                    <div><label>Poliçe Numarası</label><input type="text" id="policeNo" style="width:100%; box-sizing:border-box;"></div>
+                </div>
+
+                <div class="form-group dinamik-alan full-width" id="digerAlanlari">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div><label>Sigorta Branşı</label><input type="text" id="digerBransAd" style="width:100%;"></div>
+                        <div><label>Poliçe Numarası / Ek Detaylar</label><input type="text" id="digerEkBilgi" style="width:100%;"></div>
+                    </div>
+                </div>
+
+                <button class="save-btn" id="btnKaydet">Kaydet</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Tüm Poliçe Kayıtları</h2>
+                <button class="btn-excel" onclick="exceleAktar()">Excel'e Aktar</button>
+            </div>
+            <table id="anaTablo">
+                <thead>
+                    <tr>
+                        <th>Personel</th>
+                        <th>Müşteri</th>
+                        <th>Telefon</th>
+                        <th>Branş</th>
+                        <th>Bitiş Tarihi</th>
+                        <th>Kalan Süre</th>
+                        <th>Ek Bilgiler</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5xDRadJtlS7lcE8J5h7l6zf2JLvz3QMk", 
+            authDomain: "sigorta-takip-merkezi.firebaseapp.com",
+            projectId: "sigorta-takip-merkezi",
+            storageBucket: "sigorta-takip-merkezi.firebasestorage.app",
+            messagingSenderId: "401508358707",
+            appId: "1:401508358707:web:7dc258d61013d8a9e92146"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ADMIN_EMAIL = "svlnrdn@gmail.com"; 
+
+        let mevcutKullanici = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                if (user.email === ADMIN_EMAIL) {
+                    mevcutKullanici = user;
+                    sistemiBaslat();
+                    document.getElementById("adminPaneli").style.display = "block"; 
+                } else {
+                    const aboneBelgesi = await getDoc(doc(db, "abonelikler", user.email));
+                    
+                    if (aboneBelgesi.exists()) {
+                        let bitisZamani = aboneBelgesi.data().bitisTarihi;
+                        let suAn = new Date().getTime();
+                        
+                        if (suAn > bitisZamani) {
+                            alert("Sistem erişim süreniz dolmuştur. Lütfen aboneliğinizi yenilemek için iletişime geçiniz.");
+                            signOut(auth);
+                        } else {
+                            mevcutKullanici = user;
+                            sistemiBaslat();
+                        }
+                    } else {
+                        alert("Bu hesabın sistemde aktif bir aboneliği bulunmamaktadır.");
+                        signOut(auth);
+                    }
+                }
+            } else {
+                mevcutKullanici = null;
+                document.getElementById("loginEkrani").style.display = "flex";
+                document.getElementById("anaUygulama").style.display = "none";
+            }
+        });
+
+        function sistemiBaslat() {
+            document.getElementById("loginEkrani").style.display = "none";
+            document.getElementById("anaUygulama").style.display = "block";
+            let yetki = (mevcutKullanici.email === ADMIN_EMAIL) ? " (Yönetici)" : " (Acente)";
+            document.getElementById("kullaniciBilgi").innerText = "Kullanıcı: " + mevcutKullanici.email + yetki;
+            document.getElementById('baslangic').valueAsDate = new Date();
+            verileriGetir(); 
+        }
+
+        document.getElementById("btnGiris").addEventListener("click", () => {
+            const email = document.getElementById("emailGiris").value.trim();
+            const sifre = document.getElementById("sifreGiris").value;
+            signInWithEmailAndPassword(auth, email, sifre).catch((error) => {
+                document.getElementById("hataMesaji").style.display = "block";
+                document.getElementById("hataMesaji").innerText = "Sisteme giriş yapılamadı. Hata: " + error.code;
+            });
+        });
+
+        document.getElementById("btnCikis").addEventListener("click", () => signOut(auth));
+
+        document.getElementById("btnAboneEkle").addEventListener("click", async () => {
+            const mEmail = document.getElementById("aboneEmail").value.trim();
+            const mSure = document.getElementById("aboneSure").value;
+            
+            if (!mEmail) { alert("Lütfen acente e-posta adresini giriniz."); return; }
+            
+            let bitisTarihi = new Date();
+            if (mSure === "1m") bitisTarihi.setMonth(bitisTarihi.getMonth() + 1);
+            if (mSure === "1y") bitisTarihi.setFullYear(bitisTarihi.getFullYear() + 1);
+
+            try {
+                await setDoc(doc(db, "abonelikler", mEmail), {
+                    email: mEmail,
+                    bitisTarihi: bitisTarihi.getTime()
+                });
+                alert(`${mEmail} adresli yetkiliye ${mSure === '1m' ? '1 Aylık' : '1 Yıllık'} erişim tanımlanmıştır.`);
+                document.getElementById("aboneEmail").value = "";
+            } catch (error) {
+                alert("Yetkilendirme işlemi başarısız: " + error);
+            }
+        });
+
+        document.getElementById("btnKaydet").addEventListener("click", async () => {
+            const brans = document.getElementById("brans").value;
+            if (!brans) { alert("Lütfen işlem yapılacak branşı seçiniz."); return; }
+
+            let yeniKayit = {
+                ekleyen: mevcutKullanici.email,
+                brans: brans,
+                musteri: document.getElementById("musteri").value,
+                tc: document.getElementById("tc").value,
+                telefon: document.getElementById("telefon").value,
+                baslangic: document.getElementById("baslangic").value,
+                bitis: document.getElementById("bitis").value,
+                eklemeTarihi: new Date().getTime(),
+            };
+
+            if (!yeniKayit.musteri || !yeniKayit.bitis) { alert("Müşteri bilgisi ve poliçe süresi alanları zorunludur."); return; }
+
+            if (['Trafik', 'Kasko', 'Yeşil Kart', 'İMM'].includes(brans)) {
+                yeniKayit.detay = `Plaka: ${document.getElementById("plaka").value} <br> Ruhsat: ${document.getElementById("ruhsat").value}`;
+            } else if (['TSS', 'ÖSS', 'Seyahat Sağlık', 'Yabancı Sağlık'].includes(brans)) {
+                yeniKayit.detay = `Doğum T: ${document.getElementById("dogum").value}`;
+            } else if (['DASK', 'Konut', 'İşyeri'].includes(brans)) {
+                yeniKayit.detay = `Poliçe No: ${document.getElementById("policeNo").value}`;
+            } else if (brans === "Diğer") {
+                yeniKayit.brans = document.getElementById("digerBransAd").value || "Diğer Sigorta";
+                yeniKayit.detay = `Ek Bilgi: ${document.getElementById("digerEkBilgi").value}`;
+            }
+
+            try {
+                await addDoc(collection(db, "sigortalar"), yeniKayit);
+                document.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+                document.getElementById("sure").value = "";
+                document.getElementById("bitis").value = "";
+            } catch (e) { alert("Kayıt işlemi sırasında bir hata oluştu."); }
+        });
+
+        function verileriGetir() {
+            let q = (mevcutKullanici.email === ADMIN_EMAIL) 
+                ? query(collection(db, "sigortalar")) 
+                : query(collection(db, "sigortalar"), where("ekleyen", "==", mevcutKullanici.email));
+
+            onSnapshot(q, (snapshot) => {
+                const tbody = document.querySelector("#anaTablo tbody");
+                tbody.innerHTML = "";
+                let acilPoliçeSayisi = 0; 
+
+                let veriler = [];
+                snapshot.forEach(docSnap => veriler.push({id: docSnap.id, data: docSnap.data()}));
+                veriler.sort((a, b) => b.data.eklemeTarihi - a.data.eklemeTarihi);
+
+                veriler.forEach((kayit) => {
+                    let s = kayit.data;
+                    let kalan = kalanGunHesapla(s.bitis);
+                    let rozetHTML = rozetOlustur(kalan);
+                    let ekleyenKisi = `<span class="user-tag">${s.ekleyen.split('@')[0].toUpperCase()}</span>`;
+                    
+                    if (kalan <= 3 && kalan >= 0) acilPoliçeSayisi++;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${ekleyenKisi}</td>
+                            <td><strong>${s.musteri}</strong><br><small>${s.tc}</small></td>
+                            <td>${s.telefon}</td>
+                            <td><b>${s.brans}</b></td>
+                            <td>${s.bitis}</td>
+                            <td>${rozetHTML}</td>
+                            <td><span class="detay-metni">${s.detay}</span></td>
+                            <td><button class="btn-delete" onclick="kayitSil('${kayit.id}')">Sil</button></td>
+                        </tr>`;
+                });
+                
+                let bildirimKutusu = document.getElementById("bildirimPaneli");
+                if(acilPoliçeSayisi > 0) {
+                    bildirimKutusu.style.display = "block";
+                    bildirimKutusu.innerHTML = `DİKKAT: Bitiş tarihine 3 gün veya daha az kalmış ${acilPoliçeSayisi} adet aktif poliçe kaydı bulunmaktadır. İlgili kayıtları tablodan kontrol ediniz.`;
+                } else {
+                    bildirimKutusu.style.display = "none";
+                }
+            });
+        }
+
+        window.dinamikAlanlariGuncelle = function() {
+            const b = document.getElementById("brans").value;
+            document.querySelectorAll(".dinamik-alan").forEach(el => el.style.display = "none");
+            if (['Trafik', 'Kasko', 'Yeşil Kart', 'İMM'].includes(b)) document.getElementById("otoAlanlari").style.display = "block";
+            else if (['TSS', 'ÖSS', 'Seyahat Sağlık', 'Yabancı Sağlık'].includes(b)) document.getElementById("saglikAlanlari").style.display = "block";
+            else if (['DASK', 'Konut', 'İşyeri'].includes(b)) document.getElementById("evAlanlari").style.display = "block";
+            else if (b === "Diğer") document.getElementById("digerAlanlari").style.display = "block";
+        };
+
+        window.bitisHesapla = function() {
+            let bas = document.getElementById("baslangic").value;
+            let sur = document.getElementById("sure").value;
+            let bit = document.getElementById("bitis");
+            if (!bas || !sur) return;
+            let d = new Date(bas);
+            if (sur === "15d") d.setDate(d.getDate() + 15);
+            else if (sur === "3m") d.setMonth(d.getMonth() + 3);
+            else if (sur === "6m") d.setMonth(d.getMonth() + 6);
+            else if (sur === "1y") d.setFullYear(d.getFullYear() + 1);
+            bit.value = d.toISOString().split('T')[0];
+        };
+
+        window.kalanGunHesapla = function(bitisTarihi) {
+            const bugun = new Date(); bugun.setHours(0,0,0,0);
+            return Math.ceil((new Date(bitisTarihi) - bugun) / 86400000);
+        };
+
+        window.rozetOlustur = function(kalanGun) {
+            if (kalanGun > 14) return `<span class="badge badge-safe">${kalanGun} Gün</span>`;
+            if (kalanGun > 3) return `<span class="badge badge-warn">${kalanGun} Gün</span>`;
+            if (kalanGun >= 0) return `<span class="badge badge-danger">${kalanGun} Gün</span>`;
+            return `<span class="badge badge-danger">Süresi Doldu</span>`;
+        };
+
+        window.kayitSil = async function(id) {
+            if(confirm("Seçili kaydı sistemden kalıcı olarak silmek istediğinize emin misiniz?")) await deleteDoc(doc(db, "sigortalar", id));
+        };
+        
+        window.exceleAktar = function() {
+            let tablo = document.getElementById("anaTablo");
+            let htmlKodu = tablo.outerHTML.replace(/<td><button.*?<\/button><\/td>/g, "");
+            htmlKodu = htmlKodu.replace(/<th>İşlem<\/th>/g, "");
+            
+            let veri = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>' + htmlKodu + '</body></html>';
+            
+            let blob = new Blob([veri], { type: 'application/vnd.ms-excel' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Sigorta_Kayitlari.xls';
+            link.click();
+        };
+    </script>
+</body>
+</html>
