@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sigorta Takip & CRM Sistemi</title>
 
-    <!-- Gerçek Excel (.xlsx) oluşturmak için SheetJS -->
+    <!-- Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
@@ -86,7 +86,8 @@
         }
 
         .form-container,
-        .admin-container {
+        .admin-container,
+        .bildirim-ayarlari {
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -97,6 +98,12 @@
         .admin-container {
             background: #fff3cd;
             border-left: 5px solid #ffc107;
+            display: none;
+        }
+
+        .bildirim-ayarlari {
+            background: #e8f5e9;
+            border-left: 5px solid #28a745;
             display: none;
         }
 
@@ -131,11 +138,18 @@
         }
 
         input,
-        select {
+        select,
+        textarea {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
         }
 
         optgroup {
@@ -180,6 +194,20 @@
             width: 100%;
         }
 
+        .bildirim-btn {
+            background-color: #198754;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .bildirim-btn.kirmizi {
+            background-color: #dc3545;
+        }
+
         #bildirimPaneli {
             background: #f8d7da;
             color: #721c24;
@@ -188,6 +216,15 @@
             margin-bottom: 20px;
             font-weight: bold;
             border-left: 5px solid #dc3545;
+            display: none;
+        }
+
+        #bildirimIzinPaneli {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             display: none;
         }
 
@@ -283,853 +320,1166 @@
             border: 1px solid #eee;
             display: inline-block;
         }
+
+        .durum-yesil {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .durum-kirmizi {
+            color: #dc3545;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- GİRİŞ EKRANI -->
-    <div id="loginEkrani">
-        <div class="login-kutu">
-            <h2 style="border:none; margin-top:0;">Sistem Girişi</h2>
+<div id="loginEkrani">
+    <div class="login-kutu">
+        <h2 style="border:none; margin-top:0;">Sistem Girişi</h2>
 
-            <input
-                type="email"
-                id="emailGiris"
-                placeholder="E-posta Adresi"
-            >
+        <input
+            type="email"
+            id="emailGiris"
+            placeholder="E-posta Adresi"
+        >
 
-            <input
-                type="password"
-                id="sifreGiris"
-                placeholder="Şifre"
-            >
+        <input
+            type="password"
+            id="sifreGiris"
+            placeholder="Şifre"
+        >
 
-            <button id="btnGiris">Giriş Yap</button>
+        <button id="btnGiris">Giriş Yap</button>
 
-            <p
-                id="hataMesaji"
-                style="color:red; font-size:12px; display:none;"
-            ></p>
+        <p
+            id="hataMesaji"
+            style="color:red; font-size:12px; display:none;"
+        ></p>
+    </div>
+</div>
+
+
+<div id="anaUygulama">
+
+    <div class="header">
+        <div>
+            <h3 style="margin:0;">
+                Sigorta Takip ve CRM Sistemi
+            </h3>
+
+            <small id="kullaniciBilgi"></small>
         </div>
+
+        <button
+            class="logout-btn"
+            id="btnCikis"
+        >
+            Oturumu Kapat
+        </button>
     </div>
 
 
-    <!-- ANA UYGULAMA -->
-    <div id="anaUygulama">
+    <!-- BİLDİRİM İZNİ -->
+    <div id="bildirimIzinPaneli">
 
-        <!-- ÜST BAŞLIK -->
-        <div class="header">
+        <strong>🔔 Bildirimleri Aç</strong>
 
-            <div>
-                <h3 style="margin:0;">
-                    Sigorta Takip ve CRM Sistemi
-                </h3>
+        <p style="margin:8px 0;">
+            Poliçe uyarıları, hoş geldin mesajları ve önemli
+            sistem bildirimlerini bilgisayarınızda almak için
+            bildirimleri açabilirsiniz.
+        </p>
 
-                <small id="kullaniciBilgi"></small>
+        <button
+            class="bildirim-btn"
+            id="btnBildirimIzni"
+        >
+            Bildirimleri Aç
+        </button>
+
+    </div>
+
+
+    <!-- ADMIN -->
+    <div
+        class="admin-container"
+        id="adminPaneli"
+    >
+
+        <h2>
+            Acente Yetkilendirme ve Abonelik Yönetimi
+        </h2>
+
+        <p
+            style="
+            font-size:12px;
+            margin-top:-5px;
+            color:#666;
+            "
+        >
+            Sistem erişimi sağlanan acentelerin kullanım
+            sürelerini buradan yönetebilirsiniz.
+        </p>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label>
+                    Acente E-posta Adresi
+                </label>
+
+                <input
+                    type="email"
+                    id="aboneEmail"
+                    placeholder="Müşteri E-posta Adresi"
+                >
+
             </div>
 
+
+            <div class="form-group">
+
+                <label>
+                    Abonelik Süresi
+                </label>
+
+                <select id="aboneSure">
+
+                    <option value="1m">
+                        1 Aylık Erişim
+                    </option>
+
+                    <option value="1y">
+                        1 Yıllık Erişim
+                    </option>
+
+                </select>
+
+            </div>
+
+
             <button
-                class="logout-btn"
-                id="btnCikis"
+                class="admin-btn"
+                id="btnAboneEkle"
             >
-                Oturumu Kapat
+                Yetkilendirmeyi Onayla
             </button>
 
         </div>
 
 
-        <!-- ADMİN PANELİ -->
-        <div
-            class="admin-container"
-            id="adminPaneli"
-        >
+        <hr style="margin:25px 0;">
 
-            <h2>
-                Acente Yetkilendirme ve Abonelik Yönetimi
-            </h2>
 
-            <p
-                style="font-size:12px; margin-top:-5px; color:#666;"
+        <h2>
+            📢 Tüm Acentelere Bildirim Gönder
+        </h2>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label>
+                    Bildirim Başlığı
+                </label>
+
+                <input
+                    type="text"
+                    id="bildirimBaslik"
+                    placeholder="Örneğin: Sistem Duyurusu"
+                >
+
+            </div>
+
+
+            <div class="form-group full-width">
+
+                <label>
+                    Bildirim Mesajı
+                </label>
+
+                <textarea
+                    id="bildirimMesaj"
+                    placeholder="Göndermek istediğiniz mesaj..."
+                ></textarea>
+
+            </div>
+
+
+            <button
+                class="bildirim-btn"
+                id="btnTopluBildirim"
             >
-                Sistem erişimi sağlanan acentelerin kullanım sürelerini
-                bu panelden yönetebilirsiniz.
-            </p>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>
-                        Acente E-posta Adresi
-                    </label>
-
-                    <input
-                        type="email"
-                        id="aboneEmail"
-                        placeholder="Müşteri E-posta Adresi"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Abonelik Süresi
-                    </label>
-
-                    <select id="aboneSure">
-
-                        <option value="1m">
-                            1 Aylık Erişim
-                        </option>
-
-                        <option value="1y">
-                            1 Yıllık Erişim
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <button
-                    class="admin-btn"
-                    id="btnAboneEkle"
-                >
-                    Yetkilendirmeyi Onayla
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- BİLDİRİM PANELİ -->
-        <div id="bildirimPaneli"></div>
-
-
-        <!-- YENİ POLİÇE FORMU -->
-        <div class="form-container">
-
-            <h2>
-                Yeni Sigorta Poliçesi Kaydı
-            </h2>
-
-            <div class="form-grid">
-
-
-                <!-- BRANŞ -->
-                <div
-                    class="form-group full-width"
-                    style="
-                        background:#e3f2fd;
-                        padding:10px;
-                        border-radius:6px;
-                        border:1px solid #90caf9;
-                    "
-                >
-
-                    <label style="color:#0056b3;">
-                        Sigorta Branşı
-                    </label>
-
-                    <select
-                        id="brans"
-                        onchange="dinamikAlanlariGuncelle()"
-                        style="
-                            border-color:#64b5f6;
-                            font-weight:bold;
-                            height:35px;
-                        "
-                    >
-
-                        <option value="">
-                            Lütfen Bir Branş Seçiniz...
-                        </option>
-
-                        <optgroup label="Oto Grubu">
-
-                            <option value="Trafik">
-                                Trafik Sigortası
-                            </option>
-
-                            <option value="Kasko">
-                                Kasko
-                            </option>
-
-                            <option value="Yeşil Kart">
-                                Yeşil Kart
-                            </option>
-
-                            <option value="İMM">
-                                İhtiyari Mali Mesuliyet (İMM)
-                            </option>
-
-                        </optgroup>
-
-
-                        <optgroup label="Sağlık ve Hayat">
-
-                            <option value="TSS">
-                                TSS (Tamamlayıcı Sağlık)
-                            </option>
-
-                            <option value="ÖSS">
-                                ÖSS (Özel Sağlık)
-                            </option>
-
-                            <option value="Seyahat Sağlık">
-                                Seyahat Sağlık
-                            </option>
-
-                            <option value="Yabancı Sağlık">
-                                Yabancı Sağlık
-                            </option>
-
-                        </optgroup>
-
-
-                        <optgroup label="Konut ve İşyeri">
-
-                            <option value="DASK">
-                                DASK
-                            </option>
-
-                            <option value="Konut">
-                                Konut Sigortası
-                            </option>
-
-                            <option value="İşyeri">
-                                İşyeri Sigortası
-                            </option>
-
-                        </optgroup>
-
-
-                        <optgroup label="Diğer Kurumsal">
-
-                            <option value="Diğer">
-                                Diğer (Manuel Giriş)
-                            </option>
-
-                        </optgroup>
-
-                    </select>
-
-                </div>
-
-
-                <!-- GENEL BİLGİLER -->
-
-                <div class="form-group">
-
-                    <label>
-                        Müşteri Adı Soyadı / Unvan
-                    </label>
-
-                    <input
-                        type="text"
-                        id="musteri"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        TC / VKN
-                    </label>
-
-                    <input
-                        type="text"
-                        id="tc"
-                        maxlength="11"
-                        inputmode="numeric"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Telefon Numarası
-                    </label>
-
-                    <input
-                        type="text"
-                        id="telefon"
-                        inputmode="tel"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Poliçe Başlangıç Tarihi
-                    </label>
-
-                    <input
-                        type="date"
-                        id="baslangic"
-                        onchange="bitisHesapla()"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Poliçe Süresi
-                    </label>
-
-                    <select
-                        id="sure"
-                        onchange="bitisHesapla()"
-                    >
-
-                        <option value="">
-                            Seçiniz...
-                        </option>
-
-                        <option value="15d">
-                            15 Gün
-                        </option>
-
-                        <option value="3m">
-                            3 Ay
-                        </option>
-
-                        <option value="6m">
-                            6 Ay
-                        </option>
-
-                        <option value="1y">
-                            1 Yıl
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Poliçe Bitiş Tarihi
-                    </label>
-
-                    <input
-                        type="date"
-                        id="bitis"
-                        readonly
-                        style="background-color:#e9ecef;"
-                    >
-
-                </div>
-
-
-                <!-- OTO -->
-                <div
-                    class="form-group dinamik-alan full-width"
-                    id="otoAlanlari"
-                >
-
-                    <div
-                        style="
-                            display:grid;
-                            grid-template-columns:1fr 1fr;
-                            gap:15px;
-                        "
-                    >
-
-                        <div>
-
-                            <label>
-                                Plaka Numarası
-                            </label>
-
-                            <input
-                                type="text"
-                                id="plaka"
-                                style="width:100%;"
-                            >
-
-                        </div>
-
-
-                        <div>
-
-                            <label>
-                                Ruhsat Seri Numarası
-                            </label>
-
-                            <input
-                                type="text"
-                                id="ruhsat"
-                                style="width:100%;"
-                            >
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- SAĞLIK -->
-                <div
-                    class="form-group dinamik-alan full-width"
-                    id="saglikAlanlari"
-                >
-
-                    <div>
-
-                        <label>
-                            Doğum Tarihi
-                        </label>
-
-                        <input
-                            type="date"
-                            id="dogum"
-                            style="
-                                width:100%;
-                                box-sizing:border-box;
-                            "
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <!-- KONUT -->
-                <div
-                    class="form-group dinamik-alan full-width"
-                    id="evAlanlari"
-                >
-
-                    <div>
-
-                        <label>
-                            Poliçe Numarası
-                        </label>
-
-                        <input
-                            type="text"
-                            id="policeNo"
-                            style="
-                                width:100%;
-                                box-sizing:border-box;
-                            "
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <!-- DİĞER -->
-                <div
-                    class="form-group dinamik-alan full-width"
-                    id="digerAlanlari"
-                >
-
-                    <div
-                        style="
-                            display:grid;
-                            grid-template-columns:1fr 1fr;
-                            gap:15px;
-                        "
-                    >
-
-                        <div>
-
-                            <label>
-                                Sigorta Branşı
-                            </label>
-
-                            <input
-                                type="text"
-                                id="digerBransAd"
-                                style="width:100%;"
-                            >
-
-                        </div>
-
-
-                        <div>
-
-                            <label>
-                                Poliçe Numarası / Ek Detaylar
-                            </label>
-
-                            <input
-                                type="text"
-                                id="digerEkBilgi"
-                                style="width:100%;"
-                            >
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <button
-                    class="save-btn"
-                    id="btnKaydet"
-                >
-                    Kaydet
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- POLİÇE TABLOSU -->
-        <div class="table-container">
-
-            <div class="table-header">
-
-                <h2>
-                    Tüm Poliçe Kayıtları
-                </h2>
-
-                <button
-                    class="btn-excel"
-                    onclick="exceleAktar()"
-                >
-                    Excel'e Aktar
-                </button>
-
-            </div>
-
-
-            <table id="anaTablo">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Personel
-                        </th>
-
-                        <th>
-                            Müşteri
-                        </th>
-
-                        <th>
-                            Telefon
-                        </th>
-
-                        <th>
-                            Branş
-                        </th>
-
-                        <th>
-                            Bitiş Tarihi
-                        </th>
-
-                        <th>
-                            Kalan Süre
-                        </th>
-
-                        <th>
-                            Ek Bilgiler
-                        </th>
-
-                        <th>
-                            İşlem
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody></tbody>
-
-            </table>
+                Tüm Acentelere Gönder
+            </button>
 
         </div>
 
     </div>
 
 
-    <!-- FIREBASE -->
-    <script type="module">
+    <div id="bildirimPaneli"></div>
 
-        import {
-            initializeApp
-        } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
 
+    <!-- POLİÇE -->
+    <div class="form-container">
 
-        import {
-            getAuth,
-            signInWithEmailAndPassword,
-            onAuthStateChanged,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+        <h2>
+            Yeni Sigorta Poliçesi Kaydı
+        </h2>
 
+        <div class="form-grid">
 
-        import {
-            getFirestore,
-            collection,
-            addDoc,
-            onSnapshot,
-            deleteDoc,
-            doc,
-            query,
-            where,
-            getDoc,
-            setDoc
-        } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+            <div
+                class="form-group full-width"
+                style="
+                background:#e3f2fd;
+                padding:10px;
+                border-radius:6px;
+                border:1px solid #90caf9;
+                "
+            >
 
+                <label style="color:#0056b3;">
+                    Sigorta Branşı
+                </label>
 
-        // FIREBASE AYARLARI
-        const firebaseConfig = {
+                <select
+                    id="brans"
+                    onchange="dinamikAlanlariGuncelle()"
+                    style="
+                    border-color:#64b5f6;
+                    font-weight:bold;
+                    height:35px;
+                    "
+                >
 
-            apiKey:
-                "AIzaSyC5xDRadJtlS7lcE8J5h7l6zf2JLvz3QMk",
+                    <option value="">
+                        Lütfen Bir Branş Seçiniz...
+                    </option>
 
-            authDomain:
-                "sigorta-takip-merkezi.firebaseapp.com",
+                    <optgroup label="Oto Grubu">
 
-            projectId:
-                "sigorta-takip-merkezi",
+                        <option value="Trafik">
+                            Trafik Sigortası
+                        </option>
 
-            storageBucket:
-                "sigorta-takip-merkezi.firebasestorage.app",
+                        <option value="Kasko">
+                            Kasko
+                        </option>
 
-            messagingSenderId:
-                "401508358707",
+                        <option value="Yeşil Kart">
+                            Yeşil Kart
+                        </option>
 
-            appId:
-                "1:401508358707:web:7dc258d61013d8a9e92146"
-        };
+                        <option value="İMM">
+                            İhtiyari Mali Mesuliyet (İMM)
+                        </option>
 
+                    </optgroup>
 
-        const app = initializeApp(firebaseConfig);
 
-        const auth = getAuth(app);
+                    <optgroup label="Sağlık ve Hayat">
 
-        const db = getFirestore(app);
+                        <option value="TSS">
+                            TSS (Tamamlayıcı Sağlık)
+                        </option>
 
+                        <option value="ÖSS">
+                            ÖSS (Özel Sağlık)
+                        </option>
 
-        // ADMİN
-        const ADMIN_EMAIL = "svlnrdn@gmail.com";
+                        <option value="Seyahat Sağlık">
+                            Seyahat Sağlık
+                        </option>
 
+                        <option value="Yabancı Sağlık">
+                            Yabancı Sağlık
+                        </option>
 
-        // OTURUMDAKİ KULLANICI
-        let mevcutKullanici = null;
+                    </optgroup>
 
 
-        // SNAPSHOT DİNLEYİCİSİ
-        let verileriDinlemeDurdur = null;
+                    <optgroup label="Konut ve İşyeri">
 
+                        <option value="DASK">
+                            DASK
+                        </option>
 
-        // ---------------------------------------
-        // AUTH KONTROLÜ
-        // ---------------------------------------
+                        <option value="Konut">
+                            Konut Sigortası
+                        </option>
 
-        onAuthStateChanged(auth, async (user) => {
+                        <option value="İşyeri">
+                            İşyeri Sigortası
+                        </option>
 
-            if (user) {
+                    </optgroup>
 
-                try {
 
-                    // ADMİN
-                    if (user.email === ADMIN_EMAIL) {
+                    <optgroup label="Diğer Kurumsal">
 
-                        mevcutKullanici = user;
+                        <option value="Diğer">
+                            Diğer (Manuel Giriş)
+                        </option>
 
-                        document.getElementById(
-                            "adminPaneli"
-                        ).style.display = "block";
+                    </optgroup>
 
-                        sistemiBaslat();
+                </select>
 
-                        return;
-                    }
+            </div>
 
 
-                    // NORMAL ACENTE
-                    const aboneBelgesi = await getDoc(
-                        doc(
-                            db,
-                            "abonelikler",
-                            user.email
-                        )
-                    );
+            <div class="form-group">
 
+                <label>
+                    Müşteri Adı Soyadı / Unvan
+                </label>
 
-                    if (aboneBelgesi.exists()) {
+                <input
+                    type="text"
+                    id="musteri"
+                >
 
-                        const veriler =
-                            aboneBelgesi.data();
+            </div>
 
-                        const bitisZamani =
-                            Number(veriler.bitisTarihi);
 
+            <div class="form-group">
 
-                        const suAn =
-                            Date.now();
+                <label>
+                    TC / VKN
+                </label>
 
+                <input
+                    type="text"
+                    id="tc"
+                    maxlength="11"
+                >
 
-                        if (
-                            !bitisZamani ||
-                            suAn > bitisZamani
-                        ) {
+            </div>
 
-                            alert(
-                                "Sistem erişim süreniz dolmuştur. " +
-                                "Lütfen aboneliğinizi yenilemek için iletişime geçiniz."
-                            );
 
-                            await signOut(auth);
+            <div class="form-group">
 
-                            return;
-                        }
+                <label>
+                    Telefon Numarası
+                </label>
 
+                <input
+                    type="text"
+                    id="telefon"
+                >
 
-                        mevcutKullanici = user;
+            </div>
 
-                        document.getElementById(
-                            "adminPaneli"
-                        ).style.display = "none";
 
-                        sistemiBaslat();
+            <div class="form-group">
 
-                    } else {
+                <label>
+                    Poliçe Başlangıç Tarihi
+                </label>
 
-                        alert(
-                            "Bu hesabın sistemde aktif bir aboneliği bulunmamaktadır."
-                        );
+                <input
+                    type="date"
+                    id="baslangic"
+                    onchange="bitisHesapla()"
+                >
 
-                        await signOut(auth);
-                    }
+            </div>
 
-                } catch (error) {
 
-                    console.error(
-                        "Oturum kontrol hatası:",
-                        error
-                    );
+            <div class="form-group">
 
-                    alert(
-                        "Sistem bilgileri alınırken bir hata oluştu."
-                    );
+                <label>
+                    Poliçe Süresi
+                </label>
 
-                    await signOut(auth);
-                }
+                <select
+                    id="sure"
+                    onchange="bitisHesapla()"
+                >
 
-            } else {
+                    <option value="">
+                        Seçiniz...
+                    </option>
 
-                mevcutKullanici = null;
+                    <option value="15d">
+                        15 Gün
+                    </option>
 
+                    <option value="3m">
+                        3 Ay
+                    </option>
 
-                if (verileriDinlemeDurdur) {
+                    <option value="6m">
+                        6 Ay
+                    </option>
 
-                    verileriDinlemeDurdur();
+                    <option value="1y">
+                        1 Yıl
+                    </option>
 
-                    verileriDinlemeDurdur = null;
-                }
+                </select>
 
+            </div>
 
-                document.getElementById(
-                    "loginEkrani"
-                ).style.display = "flex";
 
+            <div class="form-group">
 
-                document.getElementById(
-                    "anaUygulama"
-                ).style.display = "none";
+                <label>
+                    Poliçe Bitiş Tarihi
+                </label>
 
+                <input
+                    type="date"
+                    id="bitis"
+                    readonly
+                    style="background-color:#e9ecef;"
+                >
 
-                document.getElementById(
-                    "adminPaneli"
-                ).style.display = "none";
-            }
+            </div>
 
-        });
 
+            <!-- OTO -->
+            <div
+                class="form-group dinamik-alan full-width"
+                id="otoAlanlari"
+            >
 
-        // ---------------------------------------
-        // SİSTEMİ BAŞLAT
-        // ---------------------------------------
+                <div
+                    style="
+                    display:grid;
+                    grid-template-columns:1fr 1fr;
+                    gap:15px;
+                    "
+                >
 
-        function sistemiBaslat() {
+                    <div>
 
-            document.getElementById(
-                "loginEkrani"
-            ).style.display = "none";
+                        <label>
+                            Plaka Numarası
+                        </label>
 
+                        <input
+                            type="text"
+                            id="plaka"
+                            style="width:100%;"
+                        >
 
-            document.getElementById(
-                "anaUygulama"
-            ).style.display = "block";
+                    </div>
 
 
-            const yetki =
-                mevcutKullanici.email === ADMIN_EMAIL
-                    ? " (Yönetici)"
-                    : " (Acente)";
+                    <div>
 
+                        <label>
+                            Ruhsat Seri Numarası
+                        </label>
 
-            document.getElementById(
-                "kullaniciBilgi"
-            ).innerText =
-                "Kullanıcı: " +
-                mevcutKullanici.email +
-                yetki;
+                        <input
+                            type="text"
+                            id="ruhsat"
+                            style="width:100%;"
+                        >
 
+                    </div>
 
-            // Başlangıç tarihini bugün yap
-            const bugun = new Date();
+                </div>
 
-            const yil =
-                bugun.getFullYear();
+            </div>
 
-            const ay =
-                String(
-                    bugun.getMonth() + 1
-                ).padStart(2, "0");
 
-            const gun =
-                String(
-                    bugun.getDate()
-                ).padStart(2, "0");
+            <!-- SAĞLIK -->
+            <div
+                class="form-group dinamik-alan full-width"
+                id="saglikAlanlari"
+            >
 
+                <label>
+                    Doğum Tarihi
+                </label>
 
-            document.getElementById(
-                "baslangic"
-            ).value =
-                `${yil}-${ay}-${gun}`;
+                <input
+                    type="date"
+                    id="dogum"
+                    style="width:100%;"
+                >
 
+            </div>
 
-            // Poliçeleri getir
-            verileriGetir();
+
+            <!-- KONUT -->
+            <div
+                class="form-group dinamik-alan full-width"
+                id="evAlanlari"
+            >
+
+                <label>
+                    Poliçe Numarası
+                </label>
+
+                <input
+                    type="text"
+                    id="policeNo"
+                    style="width:100%;"
+                >
+
+            </div>
+
+
+            <!-- DİĞER -->
+            <div
+                class="form-group dinamik-alan full-width"
+                id="digerAlanlari"
+            >
+
+                <div
+                    style="
+                    display:grid;
+                    grid-template-columns:1fr 1fr;
+                    gap:15px;
+                    "
+                >
+
+                    <div>
+
+                        <label>
+                            Sigorta Branşı
+                        </label>
+
+                        <input
+                            type="text"
+                            id="digerBransAd"
+                            style="width:100%;"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label>
+                            Poliçe Numarası / Ek Detaylar
+                        </label>
+
+                        <input
+                            type="text"
+                            id="digerEkBilgi"
+                            style="width:100%;"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <button
+                class="save-btn"
+                id="btnKaydet"
+            >
+                Kaydet
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLO -->
+    <div class="table-container">
+
+        <div class="table-header">
+
+            <h2>
+                Tüm Poliçe Kayıtları
+            </h2>
+
+            <button
+                class="btn-excel"
+                onclick="exceleAktar()"
+            >
+                Excel'e Aktar
+            </button>
+
+        </div>
+
+
+        <table id="anaTablo">
+
+            <thead>
+
+                <tr>
+
+                    <th>Personel</th>
+                    <th>Müşteri</th>
+                    <th>Telefon</th>
+                    <th>Branş</th>
+                    <th>Bitiş Tarihi</th>
+                    <th>Kalan Süre</th>
+                    <th>Ek Bilgiler</th>
+                    <th>İşlem</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import {
+        initializeApp
+    }
+    from
+    "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+
+
+    import {
+        getAuth,
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+        signOut
+    }
+    from
+    "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+
+
+    import {
+        getFirestore,
+        collection,
+        addDoc,
+        onSnapshot,
+        deleteDoc,
+        doc,
+        query,
+        where,
+        getDoc,
+        setDoc
+    }
+    from
+    "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+
+    import {
+        getMessaging,
+        getToken,
+        onMessage
+    }
+    from
+    "https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging.js";
+
+
+    const firebaseConfig = {
+
+        apiKey:
+            "AIzaSyC5xDRadJtlS7lcE8J5h7l6zf2JLvz3QMk",
+
+        authDomain:
+            "sigorta-takip-merkezi.firebaseapp.com",
+
+        projectId:
+            "sigorta-takip-merkezi",
+
+        storageBucket:
+            "sigorta-takip-merkezi.firebasestorage.app",
+
+        messagingSenderId:
+            "401508358707",
+
+        appId:
+            "1:401508358707:web:7dc258d61013d8a9e92146"
+
+    };
+
+
+    const VAPID_KEY =
+        "BOmRhv_TSgaI83tIYH-cWxEs3O6p--l6T-0PZVTQwN6xIcgw22Z1Ui9VAjTSotu6entjWcIZvQSAZaK2kK49V2A";
+
+
+    const ADMIN_EMAIL =
+        "svlnrdn@gmail.com";
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+
+    const auth =
+        getAuth(app);
+
+
+    const db =
+        getFirestore(app);
+
+
+    const messaging =
+        getMessaging(app);
+
+
+    let mevcutKullanici = null;
+
+    let verileriDinlemeDurdur = null;
+
+
+    /*
+    ----------------------------------------------------
+    GİRİŞ
+    ----------------------------------------------------
+    */
+
+    onAuthStateChanged(auth, async (user) => {
+
+        if (!user) {
+
+            mevcutKullanici = null;
+
+            document.getElementById("loginEkrani").style.display =
+                "flex";
+
+            document.getElementById("anaUygulama").style.display =
+                "none";
+
+            return;
 
         }
 
 
-        // ---------------------------------------
-        // GİRİŞ
-        // ---------------------------------------
+        try {
 
-        document
-            .getElementById("btnGiris")
-            .addEventListener("click", async () => {
+            if (user.email === ADMIN_EMAIL) {
+
+                mevcutKullanici = user;
+
+                document.getElementById("adminPaneli").style.display =
+                    "block";
+
+                sistemiBaslat();
+
+                return;
+
+            }
+
+
+            const aboneBelgesi =
+                await getDoc(
+                    doc(
+                        db,
+                        "abonelikler",
+                        user.email
+                    )
+                );
+
+
+            if (!aboneBelgesi.exists()) {
+
+                alert(
+                    "Bu hesabın sistemde aktif bir aboneliği bulunmamaktadır."
+                );
+
+                await signOut(auth);
+
+                return;
+
+            }
+
+
+            const bitisZamani =
+                aboneBelgesi.data().bitisTarihi;
+
+
+            if (
+                new Date().getTime() >
+                bitisZamani
+            ) {
+
+                alert(
+                    "Sistem erişim süreniz dolmuştur."
+                );
+
+                await signOut(auth);
+
+                return;
+
+            }
+
+
+            mevcutKullanici = user;
+
+            document.getElementById("adminPaneli").style.display =
+                "none";
+
+            sistemiBaslat();
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Kullanıcı bilgileri alınırken hata oluştu."
+            );
+
+        }
+
+    });
+
+
+    /*
+    ----------------------------------------------------
+    SİSTEMİ BAŞLAT
+    ----------------------------------------------------
+    */
+
+    async function sistemiBaslat() {
+
+        document.getElementById("loginEkrani").style.display =
+            "none";
+
+        document.getElementById("anaUygulama").style.display =
+            "block";
+
+
+        const yetki =
+            mevcutKullanici.email === ADMIN_EMAIL
+                ? " (Yönetici)"
+                : " (Acente)";
+
+
+        document.getElementById("kullaniciBilgi").innerText =
+            "Kullanıcı: " +
+            mevcutKullanici.email +
+            yetki;
+
+
+        if (
+            !document.getElementById("baslangic").value
+        ) {
+
+            document.getElementById("baslangic").valueAsDate =
+                new Date();
+
+        }
+
+
+        verileriGetir();
+
+
+        /*
+        Bildirim sistemini başlat.
+        */
+
+        await bildirimSisteminiBaslat();
+
+    }
+
+
+    /*
+    ----------------------------------------------------
+    BİLDİRİM SİSTEMİ
+    ----------------------------------------------------
+    */
+
+    async function bildirimSisteminiBaslat() {
+
+        if (!("Notification" in window)) {
+
+            console.log(
+                "Bu tarayıcı bildirimleri desteklemiyor."
+            );
+
+            return;
+
+        }
+
+
+        if (!("serviceWorker" in navigator)) {
+
+            console.log(
+                "Service Worker desteklenmiyor."
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+            /*
+            Service worker'ı siteye kaydet.
+            */
+
+            const registration =
+                await navigator.serviceWorker.register(
+                    "./firebase-messaging-sw.js"
+                );
+
+
+            /*
+            Bildirim izni daha önce verilmemişse
+            paneli göster.
+            */
+
+            if (Notification.permission === "default") {
+
+                document.getElementById(
+                    "bildirimIzinPaneli"
+                ).style.display = "block";
+
+            }
+
+
+            /*
+            Kullanıcı daha önce izin verdiyse
+            direkt token al.
+            */
+
+            if (
+                Notification.permission === "granted"
+            ) {
+
+                await bildirimTokeniniKaydet(
+                    registration
+                );
+
+            }
+
+
+            /*
+            Site açıkken gelen FCM mesajları.
+            */
+
+            onMessage(
+                messaging,
+                (payload) => {
+
+                    const baslik =
+                        payload.notification?.title ||
+                        "Sigorta Takip CRM";
+
+
+                    const mesaj =
+                        payload.notification?.body ||
+                        "Yeni bildiriminiz var.";
+
+
+                    if (
+                        Notification.permission === "granted"
+                    ) {
+
+                        new Notification(
+                            baslik,
+                            {
+                                body: mesaj
+                            }
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Bildirim sistemi başlatılamadı:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+    ----------------------------------------------------
+    BİLDİRİM İZNİ BUTONU
+    ----------------------------------------------------
+    */
+
+    document
+        .getElementById("btnBildirimIzni")
+        .addEventListener(
+            "click",
+            async () => {
+
+                try {
+
+                    const izin =
+                        await Notification.requestPermission();
+
+
+                    if (izin !== "granted") {
+
+                        alert(
+                            "Bildirim izni verilmedi."
+                        );
+
+                        return;
+
+                    }
+
+
+                    const registration =
+                        await navigator.serviceWorker.register(
+                            "./firebase-messaging-sw.js"
+                        );
+
+
+                    await bildirimTokeniniKaydet(
+                        registration
+                    );
+
+
+                    document.getElementById(
+                        "bildirimIzinPaneli"
+                    ).style.display = "none";
+
+
+                    alert(
+                        "Bildirimler başarıyla açıldı."
+                    );
+
+                }
+                catch (error) {
+
+                    console.error(error);
+
+                    alert(
+                        "Bildirimler açılırken hata oluştu."
+                    );
+
+                }
+
+            }
+        );
+
+
+    /*
+    ----------------------------------------------------
+    FCM TOKEN KAYDET
+    ----------------------------------------------------
+    */
+
+    async function bildirimTokeniniKaydet(
+        registration
+    ) {
+
+        if (!mevcutKullanici) {
+            return;
+        }
+
+
+        const token =
+            await getToken(
+                messaging,
+                {
+                    vapidKey:
+                        VAPID_KEY,
+
+                    serviceWorkerRegistration:
+                        registration
+                }
+            );
+
+
+        if (!token) {
+
+            console.log(
+                "FCM token alınamadı."
+            );
+
+            return;
+
+        }
+
+
+        /*
+        Token'dan güvenli bir Firestore ID oluştur.
+        */
+
+        const encoder =
+            new TextEncoder();
+
+
+        const data =
+            encoder.encode(token);
+
+
+        const hashBuffer =
+            await crypto.subtle.digest(
+                "SHA-256",
+                data
+            );
+
+
+        const hashArray =
+            Array.from(
+                new Uint8Array(hashBuffer)
+            );
+
+
+        const tokenId =
+            hashArray
+                .map(
+                    b =>
+                        b.toString(16).padStart(2, "0")
+                )
+                .join("");
+
+
+        await setDoc(
+            doc(
+                db,
+                "bildirimTokenlari",
+                tokenId
+            ),
+            {
+                token: token,
+
+                email:
+                    mevcutKullanici.email,
+
+                guncellemeTarihi:
+                    Date.now()
+            },
+            {
+                merge: true
+            }
+        );
+
+
+        console.log(
+            "Bildirim tokenı kaydedildi."
+        );
+
+    }
+
+
+    /*
+    ----------------------------------------------------
+    GİRİŞ
+    ----------------------------------------------------
+    */
+
+    document
+        .getElementById("btnGiris")
+        .addEventListener(
+            "click",
+            () => {
 
                 const email =
                     document
@@ -1144,567 +1494,515 @@
                         .value;
 
 
-                const hata =
-                    document.getElementById(
-                        "hataMesaji"
+                signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    sifre
+                )
+                .catch(
+                    (error) => {
+
+                        document.getElementById(
+                            "hataMesaji"
+                        ).style.display =
+                            "block";
+
+
+                        document.getElementById(
+                            "hataMesaji"
+                        ).innerText =
+                            "Sisteme giriş yapılamadı: " +
+                            error.code;
+
+                    }
+                );
+
+            }
+        );
+
+
+    /*
+    ----------------------------------------------------
+    ÇIKIŞ
+    ----------------------------------------------------
+    */
+
+    document
+        .getElementById("btnCikis")
+        .addEventListener(
+            "click",
+            () => signOut(auth)
+        );
+
+
+    /*
+    ----------------------------------------------------
+    ABONELİK
+    ----------------------------------------------------
+    */
+
+    document
+        .getElementById("btnAboneEkle")
+        .addEventListener(
+            "click",
+            async () => {
+
+                const mEmail =
+                    document
+                        .getElementById("aboneEmail")
+                        .value
+                        .trim();
+
+
+                const mSure =
+                    document
+                        .getElementById("aboneSure")
+                        .value;
+
+
+                if (!mEmail) {
+
+                    alert(
+                        "Lütfen acente e-posta adresini giriniz."
                     );
 
-
-                hata.style.display = "none";
-
-
-                if (!email || !sifre) {
-
-                    hata.innerText =
-                        "E-posta ve şifre alanlarını doldurunuz.";
-
-                    hata.style.display =
-                        "block";
-
                     return;
+
+                }
+
+
+                let bitisTarihi =
+                    new Date();
+
+
+                if (mSure === "1m") {
+
+                    bitisTarihi.setMonth(
+                        bitisTarihi.getMonth() + 1
+                    );
+
+                }
+
+
+                if (mSure === "1y") {
+
+                    bitisTarihi.setFullYear(
+                        bitisTarihi.getFullYear() + 1
+                    );
+
                 }
 
 
                 try {
 
-                    await signInWithEmailAndPassword(
-                        auth,
-                        email,
-                        sifre
+                    await setDoc(
+                        doc(
+                            db,
+                            "abonelikler",
+                            mEmail
+                        ),
+                        {
+                            email: mEmail,
+
+                            bitisTarihi:
+                                bitisTarihi.getTime()
+                        }
                     );
 
-                } catch (error) {
 
-                    console.error(
-                        "Giriş hatası:",
-                        error
+                    alert(
+                        mEmail +
+                        " adresli kullanıcıya erişim tanımlandı."
                     );
 
 
-                    hata.innerText =
-                        "Sisteme giriş yapılamadı. " +
-                        "Bilgilerinizi kontrol ediniz.";
+                    document.getElementById(
+                        "aboneEmail"
+                    ).value = "";
 
+                }
+                catch (error) {
 
-                    hata.style.display =
-                        "block";
+                    alert(
+                        "Yetkilendirme başarısız: " +
+                        error.message
+                    );
+
                 }
 
-            });
+            }
+        );
 
 
-        // ENTER TUŞUYLA GİRİŞ
-        document
-            .getElementById("sifreGiris")
-            .addEventListener("keydown", (event) => {
+    /*
+    ----------------------------------------------------
+    ADMIN TOPLU BİLDİRİM
+    ----------------------------------------------------
+    */
 
-                if (event.key === "Enter") {
+    document
+        .getElementById("btnTopluBildirim")
+        .addEventListener(
+            "click",
+            async () => {
 
+                const baslik =
                     document
-                        .getElementById("btnGiris")
-                        .click();
+                        .getElementById("bildirimBaslik")
+                        .value
+                        .trim();
+
+
+                const mesaj =
+                    document
+                        .getElementById("bildirimMesaj")
+                        .value
+                        .trim();
+
+
+                if (!baslik || !mesaj) {
+
+                    alert(
+                        "Başlık ve mesaj alanlarını doldurun."
+                    );
+
+                    return;
 
                 }
 
-            });
+
+                if (
+                    mevcutKullanici?.email !==
+                    ADMIN_EMAIL
+                ) {
+
+                    alert(
+                        "Bu işlemi sadece yönetici yapabilir."
+                    );
+
+                    return;
+
+                }
 
 
-        // ---------------------------------------
-        // ÇIKIŞ
-        // ---------------------------------------
+                try {
 
-        document
-            .getElementById("btnCikis")
-            .addEventListener(
-                "click",
-                () => signOut(auth)
-            );
+                    await addDoc(
+                        collection(
+                            db,
+                            "bildirimGonderileri"
+                        ),
+                        {
+                            baslik: baslik,
+
+                            mesaj: mesaj,
+
+                            gonderen:
+                                mevcutKullanici.email,
+
+                            tarih:
+                                Date.now()
+                        }
+                    );
 
 
-        // ---------------------------------------
-        // ABONELİK TANIMLAMA
-        // ---------------------------------------
+                    alert(
+                        "Bildirim gönderme işlemi başlatıldı."
+                    );
 
-        document
-            .getElementById("btnAboneEkle")
-            .addEventListener(
-                "click",
-                async () => {
 
-                    const mEmail =
+                    document.getElementById(
+                        "bildirimBaslik"
+                    ).value = "";
+
+
+                    document.getElementById(
+                        "bildirimMesaj"
+                    ).value = "";
+
+                }
+                catch (error) {
+
+                    alert(
+                        "Bildirim gönderilemedi: " +
+                        error.message
+                    );
+
+                }
+
+            }
+        );
+
+
+    /*
+    ----------------------------------------------------
+    POLİÇE KAYDET
+    ----------------------------------------------------
+    */
+
+    document
+        .getElementById("btnKaydet")
+        .addEventListener(
+            "click",
+            async () => {
+
+                const brans =
+                    document
+                        .getElementById("brans")
+                        .value;
+
+
+                if (!brans) {
+
+                    alert(
+                        "Lütfen işlem yapılacak branşı seçiniz."
+                    );
+
+                    return;
+
+                }
+
+
+                const musteri =
+                    document
+                        .getElementById("musteri")
+                        .value
+                        .trim();
+
+
+                const bitis =
+                    document
+                        .getElementById("bitis")
+                        .value;
+
+
+                /*
+                Sadece müşteri ve süre zorunlu.
+                Plaka, ruhsat, doğum tarihi,
+                poliçe no vb. boş olabilir.
+                */
+
+                if (!musteri || !bitis) {
+
+                    alert(
+                        "Müşteri bilgisi ve poliçe süresi zorunludur."
+                    );
+
+                    return;
+
+                }
+
+
+                let yeniKayit = {
+
+                    ekleyen:
+                        mevcutKullanici.email,
+
+                    brans:
+                        brans,
+
+                    musteri:
+                        musteri,
+
+                    tc:
                         document
-                            .getElementById("aboneEmail")
-                            .value
-                            .trim()
-                            .toLowerCase();
+                            .getElementById("tc")
+                            .value,
 
-
-                    const mSure =
+                    telefon:
                         document
-                            .getElementById("aboneSure")
+                            .getElementById("telefon")
+                            .value,
+
+                    baslangic:
+                        document
+                            .getElementById("baslangic")
+                            .value,
+
+                    bitis:
+                        bitis,
+
+                    eklemeTarihi:
+                        Date.now(),
+
+                    detay:
+                        ""
+
+                };
+
+
+                if (
+                    [
+                        "Trafik",
+                        "Kasko",
+                        "Yeşil Kart",
+                        "İMM"
+                    ].includes(brans)
+                ) {
+
+                    const plaka =
+                        document
+                            .getElementById("plaka")
                             .value;
 
 
-                    if (!mEmail) {
-
-                        alert(
-                            "Lütfen acente e-posta adresini giriniz."
-                        );
-
-                        return;
-                    }
+                    const ruhsat =
+                        document
+                            .getElementById("ruhsat")
+                            .value;
 
 
-                    if (
-                        !mEmail.includes("@")
-                    ) {
+                    yeniKayit.detay =
+                        "Plaka: " +
+                        plaka +
+                        " | Ruhsat: " +
+                        ruhsat;
 
-                        alert(
-                            "Geçerli bir e-posta adresi giriniz."
-                        );
-
-                        return;
-                    }
+                }
 
 
-                    const bitisTarihi =
-                        new Date();
+                else if (
+                    [
+                        "TSS",
+                        "ÖSS",
+                        "Seyahat Sağlık",
+                        "Yabancı Sağlık"
+                    ].includes(brans)
+                ) {
+
+                    yeniKayit.detay =
+                        "Doğum T: " +
+                        document
+                            .getElementById("dogum")
+                            .value;
+
+                }
 
 
-                    if (mSure === "1m") {
+                else if (
+                    [
+                        "DASK",
+                        "Konut",
+                        "İşyeri"
+                    ].includes(brans)
+                ) {
 
-                        bitisTarihi.setMonth(
-                            bitisTarihi.getMonth() + 1
-                        );
+                    yeniKayit.detay =
+                        "Poliçe No: " +
+                        document
+                            .getElementById("policeNo")
+                            .value;
 
-                    } else if (mSure === "1y") {
-
-                        bitisTarihi.setFullYear(
-                            bitisTarihi.getFullYear() + 1
-                        );
-
-                    }
+                }
 
 
-                    try {
+                else if (brans === "Diğer") {
 
-                        await setDoc(
-                            doc(
-                                db,
-                                "abonelikler",
-                                mEmail
-                            ),
-                            {
-                                email: mEmail,
+                    yeniKayit.brans =
+                        document
+                            .getElementById("digerBransAd")
+                            .value ||
+                        "Diğer Sigorta";
 
-                                bitisTarihi:
-                                    bitisTarihi.getTime()
+
+                    yeniKayit.detay =
+                        "Ek Bilgi: " +
+                        document
+                            .getElementById("digerEkBilgi")
+                            .value;
+
+                }
+
+
+                try {
+
+                    await addDoc(
+                        collection(
+                            db,
+                            "sigortalar"
+                        ),
+                        yeniKayit
+                    );
+
+
+                    alert(
+                        "Poliçe başarıyla kaydedildi."
+                    );
+
+
+                    document
+                        .querySelectorAll(
+                            'input[type="text"]'
+                        )
+                        .forEach(
+                            input => {
+                                input.value = "";
                             }
                         );
 
 
-                        alert(
-                            `${mEmail} adresli yetkiliye ` +
-                            `${mSure === "1m"
-                                ? "1 Aylık"
-                                : "1 Yıllık"} erişim tanımlanmıştır.`
-                        );
+                    document.getElementById(
+                        "sure"
+                    ).value = "";
 
 
-                        document.getElementById(
-                            "aboneEmail"
-                        ).value = "";
-
-                    } catch (error) {
-
-                        console.error(
-                            "Abonelik hatası:",
-                            error
-                        );
-
-
-                        alert(
-                            "Yetkilendirme işlemi başarısız.\n\n" +
-                            (error.message || error)
-                        );
-                    }
+                    document.getElementById(
+                        "bitis"
+                    ).value = "";
 
                 }
-            );
+                catch (error) {
 
+                    console.error(error);
 
-        // ---------------------------------------
-        // POLİÇE KAYDET
-        // ---------------------------------------
-
-        document
-            .getElementById("btnKaydet")
-            .addEventListener(
-                "click",
-                async () => {
-
-                    if (!mevcutKullanici) {
-
-                        alert(
-                            "Oturum bilgisi bulunamadı."
-                        );
-
-                        return;
-                    }
-
-
-                    const brans =
-                        document
-                            .getElementById("brans")
-                            .value;
-
-
-                    if (!brans) {
-
-                        alert(
-                            "Lütfen işlem yapılacak branşı seçiniz."
-                        );
-
-                        return;
-                    }
-
-
-                    const musteri =
-                        document
-                            .getElementById("musteri")
-                            .value
-                            .trim();
-
-
-                    const tc =
-                        document
-                            .getElementById("tc")
-                            .value
-                            .trim();
-
-
-                    const telefon =
-                        document
-                            .getElementById("telefon")
-                            .value
-                            .trim();
-
-
-                    const baslangic =
-                        document
-                            .getElementById("baslangic")
-                            .value;
-
-
-                    const bitis =
-                        document
-                            .getElementById("bitis")
-                            .value;
-
-
-                    if (!musteri) {
-
-                        alert(
-                            "Müşteri adı soyadı / unvan alanını doldurunuz."
-                        );
-
-                        return;
-                    }
-
-
-                    if (!baslangic) {
-
-                        alert(
-                            "Poliçe başlangıç tarihini seçiniz."
-                        );
-
-                        return;
-                    }
-
-
-                    if (!bitis) {
-
-                        alert(
-                            "Poliçe süresini seçiniz."
-                        );
-
-                        return;
-                    }
-
-
-                    let kayitBransi = brans;
-
-                    let detay = "";
-
-
-                    // OTO
-                    if (
-                        [
-                            "Trafik",
-                            "Kasko",
-                            "Yeşil Kart",
-                            "İMM"
-                        ].includes(brans)
-                    ) {
-
-                        const plaka =
-                            document
-                                .getElementById("plaka")
-                                .value
-                                .trim();
-
-
-                        const ruhsat =
-                            document
-                                .getElementById("ruhsat")
-                                .value
-                                .trim();
-
-
-                        detay =
-                            `Plaka: ${plaka} | Ruhsat: ${ruhsat}`;
-
-                    }
-
-
-                    // SAĞLIK
-                    else if (
-                        [
-                            "TSS",
-                            "ÖSS",
-                            "Seyahat Sağlık",
-                            "Yabancı Sağlık"
-                        ].includes(brans)
-                    ) {
-
-                        const dogum =
-                            document
-                                .getElementById("dogum")
-                                .value;
-
-
-                        detay =
-                            `Doğum Tarihi: ${dogum}`;
-
-                    }
-
-
-                    // KONUT
-                    else if (
-                        [
-                            "DASK",
-                            "Konut",
-                            "İşyeri"
-                        ].includes(brans)
-                    ) {
-
-                        const policeNo =
-                            document
-                                .getElementById("policeNo")
-                                .value
-                                .trim();
-
-
-                        detay =
-                            `Poliçe No: ${policeNo}`;
-
-                    }
-
-
-                    // DİĞER
-                    else if (brans === "Diğer") {
-
-                        const digerBrans =
-                            document
-                                .getElementById("digerBransAd")
-                                .value
-                                .trim();
-
-
-                        const ekBilgi =
-                            document
-                                .getElementById("digerEkBilgi")
-                                .value
-                                .trim();
-
-
-                        kayitBransi =
-                            digerBrans ||
-                            "Diğer Sigorta";
-
-
-                        detay =
-                            `Ek Bilgi: ${ekBilgi}`;
-                    }
-
-
-                    const yeniKayit = {
-
-                        ekleyen:
-                            mevcutKullanici.email,
-
-                        brans:
-                            kayitBransi,
-
-                        musteri:
-                            musteri,
-
-                        tc:
-                            tc,
-
-                        telefon:
-                            telefon,
-
-                        baslangic:
-                            baslangic,
-
-                        bitis:
-                            bitis,
-
-                        detay:
-                            detay,
-
-                        eklemeTarihi:
-                            Date.now()
-                    };
-
-
-                    try {
-
-                        await addDoc(
-                            collection(
-                                db,
-                                "sigortalar"
-                            ),
-                            yeniKayit
-                        );
-
-
-                        // Formu temizle
-                        document
-                            .getElementById("musteri")
-                            .value = "";
-
-
-                        document
-                            .getElementById("tc")
-                            .value = "";
-
-
-                        document
-                            .getElementById("telefon")
-                            .value = "";
-
-
-                        document
-                            .getElementById("plaka")
-                            .value = "";
-
-
-                        document
-                            .getElementById("ruhsat")
-                            .value = "";
-
-
-                        document
-                            .getElementById("dogum")
-                            .value = "";
-
-
-                        document
-                            .getElementById("policeNo")
-                            .value = "";
-
-
-                        document
-                            .getElementById("digerBransAd")
-                            .value = "";
-
-
-                        document
-                            .getElementById("digerEkBilgi")
-                            .value = "";
-
-
-                        document
-                            .getElementById("sure")
-                            .value = "";
-
-
-                        document
-                            .getElementById("bitis")
-                            .value = "";
-
-
-                        document
-                            .getElementById("brans")
-                            .value = "";
-
-
-                        dinamikAlanlariGuncelle();
-
-
-                        alert(
-                            "Poliçe kaydı başarıyla oluşturuldu."
-                        );
-
-
-                    } catch (error) {
-
-                        console.error(
-                            "Kayıt işlemi hatası:",
-                            error
-                        );
-
-
-                        alert(
-                            "Kayıt işlemi sırasında bir hata oluştu.\n\n" +
-                            "Hata: " +
-                            (error.message || error)
-                        );
-                    }
+                    alert(
+                        "Kayıt sırasında hata oluştu: " +
+                        error.message
+                    );
 
                 }
-            );
 
-
-        // ---------------------------------------
-        // VERİLERİ GETİR
-        // ---------------------------------------
-
-        function verileriGetir() {
-
-            // Eski dinleyiciyi kapat
-            if (verileriDinlemeDurdur) {
-
-                verileriDinlemeDurdur();
-
-                verileriDinlemeDurdur = null;
             }
+        );
 
 
-            if (!mevcutKullanici) {
-                return;
-            }
+    /*
+    ----------------------------------------------------
+    VERİLERİ GETİR
+    ----------------------------------------------------
+    */
+
+    function verileriGetir() {
+
+        if (verileriDinlemeDurdur) {
+
+            verileriDinlemeDurdur();
+
+        }
 
 
-            let q;
+        let q;
 
 
-            if (
-                mevcutKullanici.email === ADMIN_EMAIL
-            ) {
+        if (
+            mevcutKullanici.email ===
+            ADMIN_EMAIL
+        ) {
 
-                q = query(
+            q =
+                query(
                     collection(
                         db,
                         "sigortalar"
                     )
                 );
 
-            } else {
+        }
 
-                q = query(
+        else {
+
+            q =
+                query(
                     collection(
                         db,
                         "sigortalar"
@@ -1716,793 +2014,594 @@
                     )
                 );
 
-            }
+        }
 
 
-            verileriDinlemeDurdur =
-                onSnapshot(
-                    q,
+        verileriDinlemeDurdur =
+            onSnapshot(
+                q,
 
-                    (snapshot) => {
+                (snapshot) => {
 
-                        const tbody =
-                            document.querySelector(
-                                "#anaTablo tbody"
-                            );
-
-
-                        tbody.innerHTML = "";
+                    const tbody =
+                        document.querySelector(
+                            "#anaTablo tbody"
+                        );
 
 
-                        let acilPoliceSayisi = 0;
+                    tbody.innerHTML = "";
 
 
-                        let veriler = [];
+                    let acilPoliçeSayisi = 0;
+
+                    let veriler = [];
 
 
-                        snapshot.forEach(
-                            (docSnap) => {
+                    snapshot.forEach(
+                        docSnap => {
 
-                                veriler.push({
-                                    id: docSnap.id,
-                                    data: docSnap.data()
-                                });
+                            veriler.push({
+
+                                id:
+                                    docSnap.id,
+
+                                data:
+                                    docSnap.data()
+
+                            });
+
+                        }
+                    );
+
+
+                    veriler.sort(
+                        (a,b) =>
+                            (b.data.eklemeTarihi || 0) -
+                            (a.data.eklemeTarihi || 0)
+                    );
+
+
+                    veriler.forEach(
+                        kayit => {
+
+                            const s =
+                                kayit.data;
+
+
+                            const kalan =
+                                kalanGunHesapla(
+                                    s.bitis
+                                );
+
+
+                            if (
+                                kalan <= 3 &&
+                                kalan >= 0
+                            ) {
+
+                                acilPoliçeSayisi++;
 
                             }
-                        );
 
 
-                        veriler.sort(
-                            (a, b) =>
-                                (b.data.eklemeTarihi || 0) -
-                                (a.data.eklemeTarihi || 0)
-                        );
+                            const ekleyenKisi =
+                                `<span class="user-tag">
+                                    ${guvenliMetin(
+                                        (s.ekleyen || "")
+                                        .split("@")[0]
+                                        .toUpperCase()
+                                    )}
+                                </span>`;
 
 
-                        veriler.forEach(
-                            (kayit) => {
+                            tbody.innerHTML += `
 
-                                const s =
-                                    kayit.data;
-
-
-                                const kalan =
-                                    kalanGunHesapla(
-                                        s.bitis
-                                    );
-
-
-                                const rozetHTML =
-                                    rozetOlustur(
-                                        kalan
-                                    );
-
-
-                                const ekleyenKisiAdi =
-                                    guvenliMetin(
-                                        (
-                                            s.ekleyen ||
-                                            ""
-                                        )
-                                            .split("@")[0]
-                                            .toUpperCase()
-                                    );
-
-
-                                const musteri =
-                                    guvenliMetin(
-                                        s.musteri || ""
-                                    );
-
-
-                                const tc =
-                                    guvenliMetin(
-                                        s.tc || ""
-                                    );
-
-
-                                const telefon =
-                                    guvenliMetin(
-                                        s.telefon || ""
-                                    );
-
-
-                                const brans =
-                                    guvenliMetin(
-                                        s.brans || ""
-                                    );
-
-
-                                const bitis =
-                                    guvenliMetin(
-                                        s.bitis || ""
-                                    );
-
-
-                                const detay =
-                                    guvenliMetin(
-                                        s.detay || ""
-                                    );
-
-
-                                if (
-                                    kalan <= 3 &&
-                                    kalan >= 0
-                                ) {
-
-                                    acilPoliceSayisi++;
-
-                                }
-
-
-                                const tr =
-                                    document.createElement(
-                                        "tr"
-                                    );
-
-
-                                tr.innerHTML = `
+                                <tr>
 
                                     <td>
-                                        <span class="user-tag">
-                                            ${ekleyenKisiAdi}
-                                        </span>
+                                        ${ekleyenKisi}
                                     </td>
 
                                     <td>
                                         <strong>
-                                            ${musteri}
+                                            ${guvenliMetin(s.musteri)}
                                         </strong>
                                         <br>
                                         <small>
-                                            ${tc}
+                                            ${guvenliMetin(s.tc || "")}
                                         </small>
                                     </td>
 
                                     <td>
-                                        ${telefon}
+                                        ${guvenliMetin(s.telefon || "")}
                                     </td>
 
                                     <td>
                                         <b>
-                                            ${brans}
+                                            ${guvenliMetin(s.brans || "")}
                                         </b>
                                     </td>
 
                                     <td>
-                                        ${bitis}
+                                        ${guvenliMetin(s.bitis || "")}
                                     </td>
 
                                     <td>
-                                        ${rozetHTML}
+                                        ${rozetOlustur(kalan)}
                                     </td>
 
                                     <td>
                                         <span class="detay-metni">
-                                            ${detay}
+                                            ${guvenliMetin(
+                                                s.detay || ""
+                                            )}
                                         </span>
                                     </td>
 
                                     <td>
+
                                         <button
                                             class="btn-delete"
                                             onclick="kayitSil('${kayit.id}')"
                                         >
                                             Sil
                                         </button>
+
                                     </td>
 
-                                `;
+                                </tr>
 
-
-                                tbody.appendChild(tr);
-
-                            }
-                        );
-
-
-                        const bildirimKutusu =
-                            document.getElementById(
-                                "bildirimPaneli"
-                            );
-
-
-                        if (
-                            acilPoliceSayisi > 0
-                        ) {
-
-                            bildirimKutusu.style.display =
-                                "block";
-
-
-                            bildirimKutusu.innerText =
-                                "DİKKAT: Bitiş tarihine 3 gün veya daha az " +
-                                "kalmış " +
-                                acilPoliceSayisi +
-                                " adet aktif poliçe kaydı bulunmaktadır. " +
-                                "İlgili kayıtları tablodan kontrol ediniz.";
-
-                        } else {
-
-                            bildirimKutusu.style.display =
-                                "none";
-
-                            bildirimKutusu.innerText =
-                                "";
+                            `;
 
                         }
+                    );
 
-                    },
 
-                    (error) => {
-
-                        console.error(
-                            "Poliçe verileri alınamadı:",
-                            error
+                    const bildirimKutusu =
+                        document.getElementById(
+                            "bildirimPaneli"
                         );
 
 
-                        const bildirimKutusu =
-                            document.getElementById(
-                                "bildirimPaneli"
-                            );
-
+                    if (
+                        acilPoliçeSayisi > 0
+                    ) {
 
                         bildirimKutusu.style.display =
                             "block";
 
 
-                        bildirimKutusu.innerText =
-                            "Poliçe kayıtları yüklenirken bir hata oluştu.";
+                        bildirimKutusu.innerHTML =
+                            "⚠️ DİKKAT: Bitiş tarihine " +
+                            "3 gün veya daha az kalmış " +
+                            acilPoliçeSayisi +
+                            " adet aktif poliçe bulunmaktadır.";
+
+                    }
+
+                    else {
+
+                        bildirimKutusu.style.display =
+                            "none";
+
+                    }
+
+                },
+
+                error => {
+
+                    console.error(
+                        "Veriler alınamadı:",
+                        error
+                    );
+
+                }
+            );
+
+    }
+
+
+    /*
+    ----------------------------------------------------
+    HTML GÜVENLİĞİ
+    ----------------------------------------------------
+    */
+
+    function guvenliMetin(metin) {
+
+        return String(
+            metin ?? ""
+        )
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    /*
+    ----------------------------------------------------
+    DİNAMİK ALANLAR
+    ----------------------------------------------------
+    */
+
+    window.dinamikAlanlariGuncelle =
+        function() {
+
+            const b =
+                document
+                    .getElementById("brans")
+                    .value;
+
+
+            document
+                .querySelectorAll(
+                    ".dinamik-alan"
+                )
+                .forEach(
+                    el => {
+                        el.style.display =
+                            "none";
                     }
                 );
 
-        }
-
-
-        // ---------------------------------------
-        // GÜVENLİ METİN
-        // ---------------------------------------
-
-        function guvenliMetin(metin) {
 
             if (
-                metin === null ||
-                metin === undefined
+                [
+                    "Trafik",
+                    "Kasko",
+                    "Yeşil Kart",
+                    "İMM"
+                ].includes(b)
             ) {
 
-                return "";
+                document.getElementById(
+                    "otoAlanlari"
+                ).style.display =
+                    "block";
+
             }
 
 
-            return String(metin)
-                .replace(
-                    /&/g,
-                    "&amp;"
-                )
-                .replace(
-                    /</g,
-                    "&lt;"
-                )
-                .replace(
-                    />/g,
-                    "&gt;"
-                )
-                .replace(
-                    /"/g,
-                    "&quot;"
-                )
-                .replace(
-                    /'/g,
-                    "&#039;"
-                );
-        }
+            else if (
+                [
+                    "TSS",
+                    "ÖSS",
+                    "Seyahat Sağlık",
+                    "Yabancı Sağlık"
+                ].includes(b)
+            ) {
+
+                document.getElementById(
+                    "saglikAlanlari"
+                ).style.display =
+                    "block";
+
+            }
 
 
-        // ---------------------------------------
-        // DİNAMİK ALANLAR
-        // ---------------------------------------
+            else if (
+                [
+                    "DASK",
+                    "Konut",
+                    "İşyeri"
+                ].includes(b)
+            ) {
 
-        window.dinamikAlanlariGuncelle =
-            function () {
+                document.getElementById(
+                    "evAlanlari"
+                ).style.display =
+                    "block";
 
-                const b =
-                    document
-                        .getElementById("brans")
-                        .value;
+            }
 
 
+            else if (b === "Diğer") {
+
+                document.getElementById(
+                    "digerAlanlari"
+                ).style.display =
+                    "block";
+
+            }
+
+        };
+
+
+    /*
+    ----------------------------------------------------
+    BİTİŞ TARİHİ
+    ----------------------------------------------------
+    */
+
+    window.bitisHesapla =
+        function() {
+
+            const bas =
                 document
-                    .querySelectorAll(
-                        ".dinamik-alan"
-                    )
-                    .forEach(
-                        (el) =>
-                            el.style.display = "none"
-                    );
+                    .getElementById("baslangic")
+                    .value;
 
 
-                if (
-                    [
-                        "Trafik",
-                        "Kasko",
-                        "Yeşil Kart",
-                        "İMM"
-                    ].includes(b)
-                ) {
+            const sur =
+                document
+                    .getElementById("sure")
+                    .value;
 
-                    document
-                        .getElementById(
-                            "otoAlanlari"
-                        )
-                        .style.display = "block";
 
-                }
+            const bit =
+                document
+                    .getElementById("bitis");
 
-                else if (
-                    [
-                        "TSS",
-                        "ÖSS",
-                        "Seyahat Sağlık",
-                        "Yabancı Sağlık"
-                    ].includes(b)
-                ) {
 
-                    document
-                        .getElementById(
-                            "saglikAlanlari"
-                        )
-                        .style.display = "block";
+            if (!bas || !sur) {
 
-                }
+                bit.value = "";
 
-                else if (
-                    [
-                        "DASK",
-                        "Konut",
-                        "İşyeri"
-                    ].includes(b)
-                ) {
+                return;
 
-                    document
-                        .getElementById(
-                            "evAlanlari"
-                        )
-                        .style.display = "block";
+            }
 
-                }
 
-                else if (
-                    b === "Diğer"
-                ) {
+            const parcalar =
+                bas.split("-");
 
-                    document
-                        .getElementById(
-                            "digerAlanlari"
-                        )
-                        .style.display = "block";
 
-                }
-
-            };
-
-
-        // ---------------------------------------
-        // BİTİŞ TARİHİ HESAPLA
-        // ---------------------------------------
-
-        window.bitisHesapla =
-            function () {
-
-                const bas =
-                    document
-                        .getElementById("baslangic")
-                        .value;
-
-
-                const sur =
-                    document
-                        .getElementById("sure")
-                        .value;
-
-
-                const bit =
-                    document
-                        .getElementById("bitis");
-
-
-                if (
-                    !bas ||
-                    !sur
-                ) {
-
-                    bit.value = "";
-
-                    return;
-                }
-
-
-                // YYYY-MM-DD değerini
-                // yerel tarih olarak oluşturuyoruz.
-                const d =
-                    new Date(
-                        Number(
-                            bas.substring(0, 4)
-                        ),
-                        Number(
-                            bas.substring(5, 7)
-                        ) - 1,
-                        Number(
-                            bas.substring(8, 10)
-                        )
-                    );
-
-
-                if (
-                    sur === "15d"
-                ) {
-
-                    d.setDate(
-                        d.getDate() + 15
-                    );
-
-                }
-
-                else if (
-                    sur === "3m"
-                ) {
-
-                    d.setMonth(
-                        d.getMonth() + 3
-                    );
-
-                }
-
-                else if (
-                    sur === "6m"
-                ) {
-
-                    d.setMonth(
-                        d.getMonth() + 6
-                    );
-
-                }
-
-                else if (
-                    sur === "1y"
-                ) {
-
-                    d.setFullYear(
-                        d.getFullYear() + 1
-                    );
-
-                }
-
-
-                const yil =
-                    d.getFullYear();
-
-
-                const ay =
-                    String(
-                        d.getMonth() + 1
-                    ).padStart(
-                        2,
-                        "0"
-                    );
-
-
-                const gun =
-                    String(
-                        d.getDate()
-                    ).padStart(
-                        2,
-                        "0"
-                    );
-
-
-                bit.value =
-                    `${yil}-${ay}-${gun}`;
-
-            };
-
-
-        // ---------------------------------------
-        // KALAN GÜN
-        // ---------------------------------------
-
-        window.kalanGunHesapla =
-            function (bitisTarihi) {
-
-                if (!bitisTarihi) {
-                    return -1;
-                }
-
-
-                const parcalar =
-                    String(
-                        bitisTarihi
-                    ).split("-");
-
-
-                if (
-                    parcalar.length !== 3
-                ) {
-
-                    return -1;
-                }
-
-
-                const bitis =
-                    new Date(
-                        Number(parcalar[0]),
-                        Number(parcalar[1]) - 1,
-                        Number(parcalar[2])
-                    );
-
-
-                const bugun =
-                    new Date();
-
-
-                bugun.setHours(
-                    0,
-                    0,
-                    0,
-                    0
+            const d =
+                new Date(
+                    Number(parcalar[0]),
+                    Number(parcalar[1]) - 1,
+                    Number(parcalar[2])
                 );
 
 
-                bitis.setHours(
-                    0,
-                    0,
-                    0,
-                    0
+            if (sur === "15d") {
+
+                d.setDate(
+                    d.getDate() + 15
+                );
+
+            }
+
+            else if (sur === "3m") {
+
+                d.setMonth(
+                    d.getMonth() + 3
+                );
+
+            }
+
+            else if (sur === "6m") {
+
+                d.setMonth(
+                    d.getMonth() + 6
+                );
+
+            }
+
+            else if (sur === "1y") {
+
+                d.setFullYear(
+                    d.getFullYear() + 1
+                );
+
+            }
+
+
+            const yil =
+                d.getFullYear();
+
+
+            const ay =
+                String(
+                    d.getMonth() + 1
+                ).padStart(2, "0");
+
+
+            const gun =
+                String(
+                    d.getDate()
+                ).padStart(2, "0");
+
+
+            bit.value =
+                `${yil}-${ay}-${gun}`;
+
+        };
+
+
+    /*
+    ----------------------------------------------------
+    KALAN GÜN
+    ----------------------------------------------------
+    */
+
+    window.kalanGunHesapla =
+        function(bitisTarihi) {
+
+            if (!bitisTarihi) {
+
+                return -1;
+
+            }
+
+
+            const bugun =
+                new Date();
+
+
+            bugun.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+
+            const parcalar =
+                bitisTarihi.split("-");
+
+
+            const bitis =
+                new Date(
+                    Number(parcalar[0]),
+                    Number(parcalar[1]) - 1,
+                    Number(parcalar[2])
                 );
 
 
-                return Math.ceil(
-                    (
-                        bitis.getTime() -
-                        bugun.getTime()
-                    ) / 86400000
-                );
+            return Math.ceil(
+                (
+                    bitis -
+                    bugun
+                ) /
+                86400000
+            );
 
-            };
-
-
-        // ---------------------------------------
-        // ROZET
-        // ---------------------------------------
-
-        window.rozetOlustur =
-            function (kalanGun) {
-
-                if (
-                    kalanGun > 14
-                ) {
-
-                    return `
-                        <span class="badge badge-safe">
-                            ${kalanGun} Gün
-                        </span>
-                    `;
-
-                }
+        };
 
 
-                if (
-                    kalanGun > 3
-                ) {
+    /*
+    ----------------------------------------------------
+    ROZET
+    ----------------------------------------------------
+    */
 
-                    return `
-                        <span class="badge badge-warn">
-                            ${kalanGun} Gün
-                        </span>
-                    `;
+    window.rozetOlustur =
+        function(kalanGun) {
 
-                }
-
-
-                if (
-                    kalanGun >= 0
-                ) {
-
-                    return `
-                        <span class="badge badge-danger">
-                            ${kalanGun} Gün
-                        </span>
-                    `;
-
-                }
-
+            if (kalanGun > 14) {
 
                 return `
-                    <span class="badge badge-danger">
-                        Süresi Doldu
+                    <span class="badge badge-safe">
+                        ${kalanGun} Gün
                     </span>
                 `;
 
-            };
+            }
 
 
-        // ---------------------------------------
-        // KAYIT SİL
-        // ---------------------------------------
+            if (kalanGun > 3) {
 
-        window.kayitSil =
-            async function (id) {
+                return `
+                    <span class="badge badge-warn">
+                        ${kalanGun} Gün
+                    </span>
+                `;
 
-                const onay =
-                    confirm(
-                        "Seçili kaydı sistemden kalıcı olarak " +
-                        "silmek istediğinize emin misiniz?"
-                    );
+            }
 
 
-                if (!onay) {
-                    return;
-                }
+            if (kalanGun >= 0) {
+
+                return `
+                    <span class="badge badge-danger">
+                        ${kalanGun} Gün
+                    </span>
+                `;
+
+            }
 
 
-                try {
+            return `
+                <span class="badge badge-danger">
+                    Süresi Doldu
+                </span>
+            `;
 
-                    await deleteDoc(
-                        doc(
-                            db,
-                            "sigortalar",
-                            id
-                        )
-                    );
+        };
 
 
-                    alert(
-                        "Kayıt başarıyla silindi."
-                    );
+    /*
+    ----------------------------------------------------
+    SİL
+    ----------------------------------------------------
+    */
 
-                } catch (error) {
+    window.kayitSil =
+        async function(id) {
 
-                    console.error(
-                        "Silme hatası:",
-                        error
-                    );
+            if (
+                !confirm(
+                    "Seçili kaydı kalıcı olarak silmek istediğinize emin misiniz?"
+                )
+            ) {
 
+                return;
 
-                    alert(
-                        "Kayıt silinemedi.\n\n" +
-                        "Hata: " +
-                        (error.message || error)
-                    );
-
-                }
-
-            };
+            }
 
 
-        // ---------------------------------------
-        // GERÇEK EXCEL (.XLSX)
-        // ---------------------------------------
+            try {
 
-        window.exceleAktar =
-            function () {
+                await deleteDoc(
+                    doc(
+                        db,
+                        "sigortalar",
+                        id
+                    )
+                );
 
-                try {
+            }
+            catch (error) {
 
-                    const tablo =
-                        document.getElementById(
-                            "anaTablo"
-                        );
+                alert(
+                    "Kayıt silinemedi: " +
+                    error.message
+                );
+
+            }
+
+        };
 
 
-                    if (!tablo) {
+    /*
+    ----------------------------------------------------
+    EXCEL
+    ----------------------------------------------------
+    */
 
-                        alert(
-                            "Excel'e aktarılacak tablo bulunamadı."
-                        );
+    window.exceleAktar =
+        function() {
 
-                        return;
+            const tablo =
+                document.getElementById(
+                    "anaTablo"
+                );
+
+
+            const tabloKopya =
+                tablo.cloneNode(true);
+
+
+            tabloKopya
+                .querySelectorAll(
+                    "th:last-child, td:last-child"
+                )
+                .forEach(
+                    el => el.remove()
+                );
+
+
+            const workbook =
+                XLSX.utils.table_to_book(
+                    tabloKopya,
+                    {
+                        sheet: "Poliçeler"
                     }
+                );
 
 
-                    if (
-                        typeof XLSX === "undefined"
-                    ) {
+            XLSX.writeFile(
+                workbook,
+                "Sigorta_Kayitlari.xlsx"
+            );
 
-                        alert(
-                            "Excel aktarım kütüphanesi yüklenemedi. " +
-                            "İnternet bağlantınızı kontrol ediniz."
-                        );
+        };
 
-                        return;
-                    }
-
-
-                    // Tabloyu kopyala
-                    const tabloKopya =
-                        tablo.cloneNode(true);
-
-
-                    // İşlem sütununu kaldır
-                    tabloKopya
-                        .querySelectorAll("tr")
-                        .forEach(
-                            (tr) => {
-
-                                const sonHucre =
-                                    tr.lastElementChild;
-
-
-                                if (sonHucre) {
-
-                                    tr.removeChild(
-                                        sonHucre
-                                    );
-
-                                }
-
-                            }
-                        );
-
-
-                    // Excel çalışma kitabı
-                    const workbook =
-                        XLSX.utils.book_new();
-
-
-                    // HTML tablosunu Excel sayfasına çevir
-                    const worksheet =
-                        XLSX.utils.table_to_sheet(
-                            tabloKopya,
-                            {
-                                raw: false
-                            }
-                        );
-
-
-                    // Sütun genişlikleri
-                    worksheet["!cols"] = [
-                        { wch: 18 },
-                        { wch: 30 },
-                        { wch: 18 },
-                        { wch: 22 },
-                        { wch: 18 },
-                        { wch: 15 },
-                        { wch: 45 }
-                    ];
-
-
-                    XLSX.utils.book_append_sheet(
-                        workbook,
-                        worksheet,
-                        "Poliçe Kayıtları"
-                    );
-
-
-                    // Gerçek XLSX oluştur
-                    XLSX.writeFile(
-                        workbook,
-                        "Sigorta_Kayitlari.xlsx"
-                    );
-
-                } catch (error) {
-
-                    console.error(
-                        "Excel aktarım hatası:",
-                        error
-                    );
-
-
-                    alert(
-                        "Excel dosyası oluşturulurken bir hata oluştu.\n\n" +
-                        "Hata: " +
-                        (error.message || error)
-                    );
-
-                }
-
-            };
-
-    </script>
+</script>
 
 </body>
 </html>
