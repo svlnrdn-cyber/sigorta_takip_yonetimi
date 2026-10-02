@@ -1248,7 +1248,47 @@
     BİLDİRİM SİSTEMİ
     ----------------------------------------------------
     */
+function ozelGunBildirimleriniKontrolEt() {
+    const bugun = new Date();
+    const ay = bugun.getMonth() + 1;
+    const gun = bugun.getDate();
 
+    let baslik = "";
+    let mesaj = "";
+
+    // Ramazan Bayramı
+    if (ay === 3 && gun === 20) {
+        baslik = "Ramazan Bayramınız Mübarek Olsun";
+        mesaj =
+            "Ramazan Bayramınızı kutlar, sağlık, huzur ve mutluluk dileriz.";
+    }
+
+    // Kurban Bayramı
+    if (ay === 5 && gun === 27) {
+        baslik = "Kurban Bayramınız Mübarek Olsun";
+        mesaj =
+            "Kurban Bayramınızı kutlar, sağlık, huzur ve bereket dileriz.";
+    }
+
+    if (!baslik) {
+        return;
+    }
+
+    addDoc(
+        collection(db, "bildirimGonderileri"),
+        {
+            baslik: baslik,
+            mesaj: mesaj,
+            gonderenEmail: ADMIN_EMAIL,
+            tarih: Date.now()
+        }
+    ).catch((error) => {
+        console.error(
+            "Özel gün bildirimi oluşturulamadı:",
+            error
+        );
+    });
+}
     async function bildirimSisteminiBaslat() {
 
         if (!("Notification" in window)) {
