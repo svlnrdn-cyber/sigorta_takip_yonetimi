@@ -1577,6 +1577,12 @@ function uygulamaBildirimleriniDinle() {
                             docSnap.data();
 
                         bildirimler.push({
+                            if (
+    veri.hedefEmail &&
+    veri.hedefEmail !== mevcutKullanici.email
+) {
+    return;
+}
                             id: docSnap.id,
                             baslik:
                                 veri.baslik ||
