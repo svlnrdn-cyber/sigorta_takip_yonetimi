@@ -2169,6 +2169,16 @@ await addDoc(
                                 Date.now()
                         }
                     );
+                    await auditLogOlustur(
+    "Toplu Bildirim Gönderildi",
+    {
+        baslik:
+            baslik,
+
+        mesaj:
+            mesaj
+    }
+);
 
 
                     alert(
