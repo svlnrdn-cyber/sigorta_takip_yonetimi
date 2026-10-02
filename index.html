@@ -3008,6 +3008,14 @@ await auditLogOlustur(
                         id
                     )
                 );
+                await auditLogOlustur(
+    "Poliçe Silindi",
+    {
+        poliçeId:
+            id
+    },
+    id
+);
 
             }
             catch (error) {
