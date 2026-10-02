@@ -1067,6 +1067,60 @@
 
     const ADMIN_EMAIL =
         "svlnrdn@gmail.com";
+        /*
+    ----------------------------------------------------
+    AUDIT LOG
+    ----------------------------------------------------
+    */
+
+    async function auditLogOlustur(
+        islem,
+        detay = {},
+        hedefId = null
+    ) {
+
+        if (!mevcutKullanici) {
+            return;
+        }
+
+        try {
+
+            await addDoc(
+                collection(
+                    db,
+                    "auditLoglari"
+                ),
+                {
+                    kullaniciEmail:
+                        mevcutKullanici.email,
+
+                    kullaniciUid:
+                        mevcutKullanici.uid,
+
+                    islem:
+                        islem,
+
+                    detay:
+                        detay,
+
+                    hedefId:
+                        hedefId,
+
+                    tarih:
+                        Date.now()
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Audit Log kaydedilemedi:",
+                error
+            );
+
+        }
+    }
 
 
     const app =
