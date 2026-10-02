@@ -2366,14 +2366,28 @@ await addDoc(
 
 
                 try {
+const kayitRef = await addDoc(
+    collection(
+        db,
+        "sigortalar"
+    ),
+    yeniKayit
+);
 
-                    await addDoc(
-                        collection(
-                            db,
-                            "sigortalar"
-                        ),
-                        yeniKayit
-                    );
+await auditLogOlustur(
+    "Poliçe Eklendi",
+    {
+        musteri:
+            yeniKayit.musteri,
+
+        brans:
+            yeniKayit.brans,
+
+        bitis:
+            yeniKayit.bitis
+    },
+    kayitRef.id
+);
 
 
                     alert(
