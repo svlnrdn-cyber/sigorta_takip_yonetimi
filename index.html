@@ -2861,62 +2861,238 @@ function uygulamaBildirimleriniDinle() {
                 return;
             }
 
+            function excelTarihiniDonustur(deger) {
+
+                if (
+                    deger === null ||
+                    deger === undefined ||
+                    deger === ""
+                ) {
+                    return "";
+                }
+
+                if (typeof deger === "number") {
+
+                    const tarih =
+                        new Date(
+                            Math.round(
+                                (deger - 25569) *
+                                86400 *
+                                1000
+                            )
+                        );
+
+                    const gun =
+                        String(
+                            tarih.getUTCDate()
+                        ).padStart(2, "0");
+
+                    const ay =
+                        String(
+                            tarih.getUTCMonth() + 1
+                        ).padStart(2, "0");
+
+                    const yil =
+                        tarih.getUTCFullYear();
+
+                    return (
+                        yil +
+                        "-" +
+                        ay +
+                        "-" +
+                        gun
+                    );
+                }
+
+                const metin =
+                    String(deger).trim();
+
+                const parcalar =
+                    metin.split(/[.\/-]/);
+
+                if (
+                    parcalar.length === 3
+                ) {
+
+                    if (
+                        parcalar[0].length === 2 &&
+                        parcalar[1].length === 2 &&
+                        parcalar[2].length === 4
+                    ) {
+                        return (
+                            parcalar[2] +
+                            "-" +
+                            parcalar[1] +
+                            "-" +
+                            parcalar[0]
+                        );
+                    }
+
+                    if (
+                        parcalar[0].length === 4 &&
+                        parcalar[1].length === 2 &&
+                        parcalar[2].length === 2
+                    ) {
+                        return metin;
+                    }
+                }
+
+                return metin;
+            }
+
+            function musteriVeTcAyir(metin) {
+
+                let deger =
+                    String(
+                        metin || ""
+                    )
+                    .replace(/\r/g, "")
+                    .trim();
+
+                const tcBul =
+                    deger.match(
+                        /\b\d{10,11}\b/
+                    );
+
+                let tc = "";
+
+                if (tcBul) {
+
+                    tc = tcBul[0];
+
+                    deger =
+                        deger
+                            .replace(
+                                tcBul[0],
+                                ""
+                            )
+                            .trim();
+                }
+
+                deger =
+                    deger
+                        .replace(
+                            /\n+/g,
+                            " "
+                        )
+                        .replace(
+                            /\s{2,}/g,
+                            " "
+                        )
+                        .trim();
+
+                return {
+                    musteri: deger,
+                    tc: tc
+                };
+            }
+
+            function detayTemizle(metin) {
+
+                return String(
+                    metin || ""
+                )
+                .replace(
+                    /<br\s*\/?>/gi,
+                    "\n"
+                )
+                .replace(
+                    /<[^>]*>/g,
+                    ""
+                )
+                .replace(
+                    /\s*\n\s*/g,
+                    " "
+                )
+                .trim();
+            }
+
             let basarili = 0;
             let hatali = 0;
 
             for (const satir of satirlar) {
 
-                const musteri =
-                    String(
+                const musteriBilgisi =
+                    musteriVeTcAyir(
                         satir["Müşteri"] ||
-                        satir["Müşteri Adı Soyadı / Unvan"] ||
+                        satir[
+                            "Müşteri Adı Soyadı / Unvan"
+                        ] ||
                         ""
-                    ).trim();
+                    );
 
                 const telefon =
                     String(
                         satir["Telefon"] ||
-                        satir["Telefon Numarası"] ||
+                        satir[
+                            "Telefon Numarası"
+                        ] ||
                         ""
                     ).trim();
 
                 const brans =
                     String(
                         satir["Branş"] ||
-                        satir["Sigorta Branşı"] ||
+                        satir[
+                            "Sigorta Branşı"
+                        ] ||
                         ""
                     ).trim();
 
                 const bitis =
-                    String(
+                    excelTarihiniDonustur(
                         satir["Bitiş Tarihi"] ||
                         ""
-                    ).trim();
+                    );
 
                 const detay =
-                    String(
+                    detayTemizle(
                         satir["Ek Bilgiler"] ||
-                        satir["Poliçe Numarası / Ek Detaylar"] ||
+                        satir[
+                            "Poliçe Numarası / Ek Detaylar"
+                        ] ||
                         ""
-                    ).trim();
+                    );
 
-                if (!musteri || !bitis) {
+                if (
+                    !musteriBilgisi.musteri ||
+                    !bitis
+                ) {
                     hatali++;
                     continue;
                 }
 
                 await addDoc(
-                    collection(db, "sigortalar"),
+                    collection(
+                        db,
+                        "sigortalar"
+                    ),
                     {
-                        musteri: musteri,
-                        tc: "",
-                        telefon: telefon,
-                        brans: brans || "Diğer Sigorta",
-                        baslangic: "",
-                        bitis: bitis,
-                        detay: detay,
+                        musteri:
+                            musteriBilgisi.musteri,
+
+                        tc:
+                            musteriBilgisi.tc,
+
+                        telefon:
+                            telefon,
+
+                        brans:
+                            brans ||
+                            "Diğer Sigorta",
+
+                        baslangic:
+                            "",
+
+                        bitis:
+                            bitis,
+
+                        detay:
+                            detay,
+
                         ekleyen:
                             mevcutKullanici.email,
+
                         eklemeTarihi:
                             Date.now()
                     }
@@ -2944,13 +3120,11 @@ function uygulamaBildirimleriniDinle() {
             alert(
                 "Excel dosyası aktarılırken bir hata oluştu."
             );
-
         }
     };
 
     dosyaInput.click();
 };
-
 </script>
 
 </body>
