@@ -1277,29 +1277,32 @@
             paneli göster.
             */
 
-            if (Notification.permission === "default") {
+           const izinPaneli =
+    document.getElementById(
+        "bildirimIzinPaneli"
+    );
 
-                document.getElementById(
-                    "bildirimIzinPaneli"
-                ).style.display = "block";
+if (Notification.permission === "granted") {
 
-            }
+    izinPaneli.style.display = "none";
 
+    await bildirimTokeniniKaydet(
+        registration
+    );
 
-            /*
-            Kullanıcı daha önce izin verdiyse
-            direkt token al.
-            */
+} else if (
+    Notification.permission === "default"
+) {
 
-            if (
-                Notification.permission === "granted"
-            ) {
+    izinPaneli.style.display = "block";
 
-                await bildirimTokeniniKaydet(
-                    registration
-                );
+} else {
 
-            }
+    izinPaneli.style.display = "none";
+
+} 
+
+         
 
 
             /*
