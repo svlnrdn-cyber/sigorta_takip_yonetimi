@@ -2804,6 +2804,152 @@ function uygulamaBildirimleriniDinle() {
             );
 
         };
+    window.excelIceriAktar = function() {
+
+    const dosyaInput =
+        document.getElementById("excelDosyasi");
+
+    if (!dosyaInput) {
+        alert("Excel dosyası alanı bulunamadı.");
+        return;
+    }
+
+    dosyaInput.value = "";
+
+    dosyaInput.onchange = async function(event) {
+
+        const dosya = event.target.files[0];
+
+        if (!dosya) {
+            return;
+        }
+
+        try {
+
+            const veri =
+                await dosya.arrayBuffer();
+
+            const calismaKitabi =
+                XLSX.read(veri, {
+                    type: "array"
+                });
+
+            const ilkSayfa =
+                calismaKitabi.Sheets[
+                    calismaKitabi.SheetNames[0]
+                ];
+
+            const satirlar =
+                XLSX.utils.sheet_to_json(
+                    ilkSayfa,
+                    {
+                        defval: ""
+                    }
+                );
+
+            if (satirlar.length === 0) {
+                alert(
+                    "Excel dosyasında aktarılacak kayıt bulunamadı."
+                );
+                return;
+            }
+
+            if (!mevcutKullanici) {
+                alert(
+                    "Aktarım yapabilmek için sisteme giriş yapmanız gerekmektedir."
+                );
+                return;
+            }
+
+            let basarili = 0;
+            let hatali = 0;
+
+            for (const satir of satirlar) {
+
+                const musteri =
+                    String(
+                        satir["Müşteri"] ||
+                        satir["Müşteri Adı Soyadı / Unvan"] ||
+                        ""
+                    ).trim();
+
+                const telefon =
+                    String(
+                        satir["Telefon"] ||
+                        satir["Telefon Numarası"] ||
+                        ""
+                    ).trim();
+
+                const brans =
+                    String(
+                        satir["Branş"] ||
+                        satir["Sigorta Branşı"] ||
+                        ""
+                    ).trim();
+
+                const bitis =
+                    String(
+                        satir["Bitiş Tarihi"] ||
+                        ""
+                    ).trim();
+
+                const detay =
+                    String(
+                        satir["Ek Bilgiler"] ||
+                        satir["Poliçe Numarası / Ek Detaylar"] ||
+                        ""
+                    ).trim();
+
+                if (!musteri || !bitis) {
+                    hatali++;
+                    continue;
+                }
+
+                await addDoc(
+                    collection(db, "sigortalar"),
+                    {
+                        musteri: musteri,
+                        tc: "",
+                        telefon: telefon,
+                        brans: brans || "Diğer Sigorta",
+                        baslangic: "",
+                        bitis: bitis,
+                        detay: detay,
+                        ekleyen:
+                            mevcutKullanici.email,
+                        eklemeTarihi:
+                            Date.now()
+                    }
+                );
+
+                basarili++;
+            }
+
+            alert(
+                "Excel aktarımı tamamlandı.\n\n" +
+                "Aktarılan kayıt: " +
+                basarili +
+                "\n" +
+                "Aktarılamayan kayıt: " +
+                hatali
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Excel aktarım hatası:",
+                error
+            );
+
+            alert(
+                "Excel dosyası aktarılırken bir hata oluştu."
+            );
+
+        }
+    };
+
+    dosyaInput.click();
+};
 
 </script>
 
