@@ -1908,6 +1908,18 @@ function uygulamaBildirimleriniDinle() {
                     email,
                     sifre
                 )
+                    .then(
+    async () => {
+
+        await auditLogOlustur(
+            "Giriş Yapıldı",
+            {
+                email: email
+            }
+        );
+
+    }
+)
                 .catch(
                     (error) => {
 
