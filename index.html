@@ -1274,8 +1274,17 @@ function ozelGunBildirimleriniKontrolEt() {
         return;
     }
 
-    addDoc(
-        collection(db, "bildirimGonderileri"),
+    setDoc(
+    doc(
+        db,
+        "bildirimGonderileri",
+        "ozelgun-" +
+            bugun.getFullYear() +
+            "-" +
+            ay +
+            "-" +
+            gun
+    ),
         {
             baslik: baslik,
             mesaj: mesaj,
@@ -1290,6 +1299,7 @@ function ozelGunBildirimleriniKontrolEt() {
     });
 }
     async function bildirimSisteminiBaslat() {
+        ozelGunBildirimleriniKontrolEt();
 
         if (!("Notification" in window)) {
 
