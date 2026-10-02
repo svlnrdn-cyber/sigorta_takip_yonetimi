@@ -1819,7 +1819,23 @@ function uygulamaBildirimleriniDinle() {
                         " adresli kullanıcıya erişim tanımlandı."
                     );
 
-
+await addDoc(
+    collection(
+        db,
+        "bildirimGonderileri"
+    ),
+    {
+        baslik: "Hoş Geldiniz",
+        mesaj:
+            "Acentanıza hoş geldiniz. Sigorta Takip ve CRM sistemini kullanmaya başlayabilirsiniz.",
+        gonderenEmail:
+            ADMIN_EMAIL,
+        hedefEmail:
+            mEmail,
+        tarih:
+            Date.now()
+    }
+);
                     document.getElementById(
                         "aboneEmail"
                     ).value = "";
