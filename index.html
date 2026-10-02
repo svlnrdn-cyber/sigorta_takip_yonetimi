@@ -3331,44 +3331,57 @@ await auditLogOlustur(
                     continue;
                 }
 
-                await addDoc(
-                    collection(
-                        db,
-                        "sigortalar"
-                    ),
-                    {
-                        musteri:
-                            musteriBilgisi.musteri,
+               const aktarilanKayitRef =
+    await addDoc(
+        collection(
+            db,
+            "sigortalar"
+        ),
+        {
+            musteri:
+                musteriBilgisi.musteri,
 
-                        tc:
-                            musteriBilgisi.tc,
+            tc:
+                musteriBilgisi.tc,
 
-                        telefon:
-                            telefon,
+            telefon:
+                telefon,
 
-                        brans:
-                            brans ||
-                            "Diğer Sigorta",
+            brans:
+                brans ||
+                "Diğer Sigorta",
 
-                        baslangic:
-                            "",
+            baslangic:
+                "",
 
-                        bitis:
-                            bitis,
+            bitis:
+                bitis,
 
-                        detay:
-                            detay,
+            detay:
+                detay,
 
-                        ekleyen:
-                            mevcutKullanici.email,
+            ekleyen:
+                mevcutKullanici.email,
 
-                        eklemeTarihi:
-                            Date.now()
-                    }
-                );
-
+            eklemeTarihi:
+                Date.now()
+        }
+    );
                 basarili++;
             }
+            await auditLogOlustur(
+    "Excel'den Poliçe Aktarımı",
+    {
+        basariliKayit:
+            basarili,
+
+        hataliKayit:
+            hatali,
+
+        toplamKayit:
+            satirlar.length
+    }
+);
 
             alert(
                 "Excel aktarımı tamamlandı.\n\n" +
