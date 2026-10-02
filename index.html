@@ -2043,6 +2043,20 @@ function uygulamaBildirimleriniDinle() {
                                 bitisTarihi.getTime()
                         }
                     );
+                    await auditLogOlustur(
+    "Abonelik Yetkilendirildi",
+    {
+        hedefEmail:
+            mEmail,
+
+        sure:
+            mSure,
+
+        bitisTarihi:
+            bitisTarihi.getTime()
+    },
+    mEmail
+);
 
 
                     alert(
