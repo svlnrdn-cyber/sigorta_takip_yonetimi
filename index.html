@@ -1948,12 +1948,26 @@ function uygulamaBildirimleriniDinle() {
     ----------------------------------------------------
     */
 
-    document
-        .getElementById("btnCikis")
-        .addEventListener(
-            "click",
-            () => signOut(auth)
-        );
+   document
+    .getElementById("btnCikis")
+    .addEventListener(
+        "click",
+        async () => {
+
+            await auditLogOlustur(
+                "Çıkış Yapıldı",
+                {
+                    email:
+                        mevcutKullanici
+                            ? mevcutKullanici.email
+                            : null
+                }
+            );
+
+            await signOut(auth);
+
+        }
+    );
 
 
     /*
