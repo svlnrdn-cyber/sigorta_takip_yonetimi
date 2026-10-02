@@ -1513,7 +1513,148 @@
 
     }
 
+/*
+----------------------------------------------------
+UYGULAMA BİLDİRİMLERİNİ DİNLE
+----------------------------------------------------
+*/
 
+let bildirimleriDinlemeDurdur = null;
+
+function uygulamaBildirimleriniDinle() {
+
+    if (bildirimleriDinlemeDurdur) {
+        bildirimleriDinlemeDurdur();
+    }
+
+    const q = query(
+        collection(db, "bildirimGonderileri")
+    );
+
+    bildirimleriDinlemeDurdur =
+        onSnapshot(
+            q,
+            (snapshot) => {
+
+                const liste =
+                    document.getElementById(
+                        "uygulamaBildirimListesi"
+                    );
+
+                const sayi =
+                    document.getElementById(
+                        "bildirimSayisi"
+                    );
+
+                if (!liste || !sayi) {
+                    return;
+                }
+
+                const bildirimler = [];
+
+                snapshot.forEach(
+                    (docSnap) => {
+
+                        const veri =
+                            docSnap.data();
+
+                        bildirimler.push({
+                            id: docSnap.id,
+                            baslik:
+                                veri.baslik ||
+                                "Bildirim",
+                            mesaj:
+                                veri.mesaj ||
+                                "",
+                            tarih:
+                                veri.tarih ||
+                                0
+                        });
+                    }
+                );
+
+                bildirimler.sort(
+                    (a, b) =>
+                        b.tarih - a.tarih
+                );
+
+                const sonBildirimler =
+                    bildirimler.slice(0, 20);
+
+                sayi.innerText =
+                    String(
+                        sonBildirimler.length
+                    );
+
+                liste.innerHTML = "";
+
+                if (sonBildirimler.length === 0) {
+
+                    liste.innerHTML =
+                        "<small>Henüz bildirim yok.</small>";
+
+                    return;
+                }
+
+                sonBildirimler.forEach(
+                    (bildirim) => {
+
+                        const kutu =
+                            document.createElement(
+                                "div"
+                            );
+
+                        kutu.className =
+                            "uygulama-bildirim";
+
+                        const baslik =
+                            document.createElement(
+                                "strong"
+                            );
+
+                        baslik.textContent =
+                            bildirim.baslik;
+
+                        const mesaj =
+                            document.createElement(
+                                "div"
+                            );
+
+                        mesaj.textContent =
+                            bildirim.mesaj;
+
+                        const tarih =
+                            document.createElement(
+                                "small"
+                            );
+
+                        tarih.textContent =
+                            bildirim.tarih
+                                ? new Date(
+                                    bildirim.tarih
+                                ).toLocaleString(
+                                    "tr-TR"
+                                )
+                                : "";
+
+                        kutu.appendChild(baslik);
+                        kutu.appendChild(mesaj);
+                        kutu.appendChild(tarih);
+
+                        liste.appendChild(kutu);
+                    }
+                );
+            },
+            (error) => {
+
+                console.error(
+                    "Bildirimler alınamadı:",
+                    error
+                );
+
+            }
+        );
+}
     /*
     ----------------------------------------------------
     GİRİŞ
