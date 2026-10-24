@@ -1800,24 +1800,19 @@ function uygulamaBildirimleriniDinle() {
                         const veri =
                             docSnap.data();
 
-                        bildirimler.push({
-                            if (
+                        if (
     veri.hedefEmail &&
     veri.hedefEmail !== mevcutKullanici.email
 ) {
     return;
 }
-                            id: docSnap.id,
-                            baslik:
-                                veri.baslik ||
-                                "Bildirim",
-                            mesaj:
-                                veri.mesaj ||
-                                "",
-                            tarih:
-                                veri.tarih ||
-                                0
-                        });
+
+bildirimler.push({
+    id: docSnap.id,
+    baslik: veri.baslik || "Bildirim",
+    mesaj: veri.mesaj || "",
+    tarih: veri.tarih || 0
+});
                     }
                 );
 
