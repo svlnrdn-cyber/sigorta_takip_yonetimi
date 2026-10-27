@@ -1448,29 +1448,6 @@ function ozelGunBildirimleriniKontrolEt() {
     });
 
 }
-    setDoc(
-    doc(
-        db,
-        "bildirimGonderileri",
-        "ozelgun-" +
-            bugun.getFullYear() +
-            "-" +
-            ay +
-            "-" +
-            gun
-    ),
-        {
-            baslik: baslik,
-            mesaj: mesaj,
-            gonderenEmail: ADMIN_EMAIL,
-            tarih: Date.now()
-        }
-    ).catch((error) => {
-        console.error(
-            "Özel gün bildirimi oluşturulamadı:",
-            error
-        );
-    });
 }
     async function bildirimSisteminiBaslat() {
         ozelGunBildirimleriniKontrolEt();
